@@ -1,0 +1,1306 @@
+{% extends "base.html" %}
+{% block title %}Wellness Video Sessions - DUT Wellness{% endblock %}
+{% block page_title %}Video Sessions & Meetings{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Video Conference Styles */
+    .video-conference-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    /* Meeting Controls Header */
+    .meeting-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .meeting-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        animation: pulseGlow 3s ease-in-out infinite;
+    }
+    
+    @keyframes pulseGlow {
+        0%, 100% { transform: scale(1); opacity: 0.3; }
+        50% { transform: scale(1.1); opacity: 0.6; }
+    }
+    
+    .meeting-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .meeting-subtitle {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .meeting-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .meeting-action-btn {
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .meeting-action-btn:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+    }
+    
+    .meeting-action-btn.active {
+        background: #ef4444;
+        animation: pulse 1s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    
+    /* Video Container */
+    .video-container {
+        background: #1f2937;
+        border-radius: 16px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: none;
+    }
+    
+    .video-container.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .video-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .video-player {
+        background: #000;
+        border-radius: 12px;
+        aspect-ratio: 16/9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    
+    .video-player video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .video-label {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        background: rgba(0,0,0,0.7);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        z-index: 1;
+    }
+    
+    .waiting-message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        z-index: 1;
+    }
+    
+    .call-controls {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .call-control-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        background: #374151;
+        color: white;
+    }
+    
+    .call-control-btn:hover {
+        transform: scale(1.1);
+    }
+    
+    .call-control-btn.mic { background: #3b82f6; }
+    .call-control-btn.video { background: #10b981; }
+    .call-control-btn.end { background: #ef4444; }
+    .call-control-btn.disabled { background: #6b7280; opacity: 0.5; cursor: not-allowed; }
+    
+    /* AI Assistant Panel */
+    .ai-assistant-panel {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+    
+    .ai-assistant-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1rem 1.5rem;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+    }
+    
+    .ai-assistant-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .ai-assistant-status {
+        font-size: 0.75rem;
+        background: rgba(255,255,255,0.2);
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+    
+    .ai-assistant-content {
+        padding: 1.5rem;
+        max-height: 400px;
+        overflow-y: auto;
+        display: none;
+    }
+    
+    .ai-assistant-content.active {
+        display: block;
+    }
+    
+    .transcription-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .transcription-entry {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        background: #f9fafb;
+        border-radius: 10px;
+        border-left: 3px solid #667eea;
+        animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .transcription-time {
+        font-size: 0.65rem;
+        color: #9ca3af;
+        margin-bottom: 0.25rem;
+    }
+    
+    .transcription-text {
+        font-size: 0.875rem;
+        color: #374151;
+        line-height: 1.5;
+    }
+    
+    .summary-box {
+        background: #f3f4f6;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .summary-box h4 {
+        font-size: 0.875rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .key-points-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .key-points-list li {
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Booking Cards */
+    .card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 1.3rem 1.4rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    
+    .card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .card-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+    
+    .card-subtitle {
+        font-size: 0.67rem;
+        color: #6b7280;
+        margin-top: 2px;
+    }
+    
+    .bookings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .booking-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    
+    .booking-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+        border-color: #667eea;
+    }
+    
+    .booking-card.selected {
+        border: 2px solid #667eea;
+        background: #f5f3ff;
+    }
+    
+    .booking-student {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .student-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+    
+    .student-info h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .student-info p {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+    
+    .booking-details {
+        margin: 0.75rem 0;
+        padding: 0.75rem;
+        background: #f9fafb;
+        border-radius: 8px;
+    }
+    
+    .booking-detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .booking-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-confirmed { background: #d1fae5; color: #065f46; }
+    .status-completed { background: #e0e7ff; color: #3730a3; }
+    
+    .call-student-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 0.5rem;
+    }
+    
+    .call-student-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    
+    .badge-primary {
+        background: #eef2ff;
+        color: #4f46e5;
+    }
+    
+    /* Schedule Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 20px;
+        max-width: 550px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: modalSlideIn 0.3s ease;
+    }
+    
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .modal-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #9ca3af;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #374151;
+    }
+    
+    .form-input, .form-select, .form-textarea {
+        width: 100%;
+        padding: 0.625rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    /* Toast Notification */
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1100;
+        animation: slideInRight 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        max-width: 400px;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    .toast.success { border-left: 4px solid #10b981; }
+    .toast.error { border-left: 4px solid #ef4444; }
+    .toast.info { border-left: 4px solid #3b82f6; }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: #f9fafb;
+        border-radius: 12px;
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-state-text {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .video-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .bookings-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .meeting-actions {
+            flex-direction: column;
+        }
+        
+        .meeting-action-btn {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="video-conference-container">
+    <!-- Meeting Header -->
+    <div class="meeting-header">
+        <div class="meeting-title">
+            <i class="fas fa-video"></i> Wellness Video Sessions
+        </div>
+        <div class="meeting-subtitle">
+            Connect with students through secure video calls with AI-powered assistance
+        </div>
+        <div class="meeting-actions">
+            <button id="startNewCallBtn" class="meeting-action-btn">
+                <i class="fas fa-plus"></i> Start New Call
+            </button>
+            <button id="scheduleMeetingBtn" class="meeting-action-btn">
+                <i class="fas fa-calendar-plus"></i> Schedule Meeting
+            </button>
+            <button id="joinActiveCallBtn" class="meeting-action-btn" style="display: none;">
+                <i class="fas fa-phone"></i> Join Active Call
+            </button>
+            <button id="endCallBtn" class="meeting-action-btn" style="display: none;">
+                <i class="fas fa-phone-slash"></i> End Call
+            </button>
+        </div>
+    </div>
+    
+    <!-- Video Conference Container -->
+    <div id="videoContainer" class="video-container">
+        <div class="video-grid">
+            <div class="video-player" id="localVideo">
+                <video id="localVideoElement" autoplay muted playsinline></video>
+                <span class="video-label">You (Counsellor)</span>
+            </div>
+            <div class="video-player" id="remoteVideo">
+                <video id="remoteVideoElement" autoplay playsinline></video>
+                <span class="video-label">Student</span>
+                <div id="waitingMessage" class="waiting-message">
+                    <i class="fas fa-spinner fa-pulse" style="font-size: 2rem;"></i>
+                    <p>Waiting for student to join...</p>
+                </div>
+            </div>
+        </div>
+        <div class="call-controls">
+            <button class="call-control-btn mic" id="micBtn">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="call-control-btn video" id="cameraBtn">
+                <i class="fas fa-video"></i>
+            </button>
+            <button class="call-control-btn end" id="endCallBtnControl">
+                <i class="fas fa-phone-slash"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- AI Assistant Panel -->
+    <div class="ai-assistant-panel">
+        <div class="ai-assistant-header" onclick="toggleAIPanel()">
+            <div class="ai-assistant-title">
+                <i class="fas fa-microphone-alt"></i>
+                AI Voice Assistant
+                <span style="font-size: 0.75rem; opacity: 0.8;">(Beta)</span>
+            </div>
+            <div class="ai-assistant-status" id="aiStatus">
+                <i class="fas fa-circle" style="font-size: 0.5rem; color: #10b981;"></i> Ready
+            </div>
+        </div>
+        <div id="aiContent" class="ai-assistant-content">
+            <div id="transcriptionList" class="transcription-list">
+                <div class="transcription-entry">
+                    <div class="transcription-time">System</div>
+                    <div class="transcription-text">AI assistant is ready. It will automatically transcribe and analyze your sessions.</div>
+                </div>
+            </div>
+            <div id="summaryBox" class="summary-box" style="display: none;">
+                <h4><i class="fas fa-file-alt"></i> Session Summary</h4>
+                <div id="summaryContent"></div>
+                <button onclick="exportSummary()" class="btn-primary" style="margin-top: 1rem; width: 100%;">
+                    <i class="fas fa-download"></i> Export Summary
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Available Bookings Section -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-head">
+            <div>
+                <div class="card-title"><i class="fas fa-calendar-check"></i> Available Bookings</div>
+                <div class="card-subtitle">Select a student to start a video session</div>
+            </div>
+            <div>
+                <span id="bookingCount" class="badge badge-primary">0 confirmed</span>
+            </div>
+        </div>
+        <div id="bookingsList" class="bookings-grid">
+            <!-- Bookings will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- Upcoming Meetings Section -->
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title"><i class="fas fa-calendar-week"></i> Upcoming Meetings</div>
+                <div class="card-subtitle">Scheduled sessions and reminders</div>
+            </div>
+            <button id="scheduleQuickBtn" class="btn-primary" style="padding: 0.5rem 1rem;">
+                <i class="fas fa-plus"></i> Schedule
+            </button>
+        </div>
+        <div id="upcomingMeetingsList">
+            <!-- Meetings will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Meeting Modal -->
+<div id="scheduleModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-calendar-plus"></i> Schedule a Meeting</h3>
+            <button onclick="closeScheduleModal()" class="modal-close">&times;</button>
+        </div>
+        <form id="scheduleForm">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Select Student *</label>
+                    <select id="studentSelect" class="form-select" required>
+                        <option value="">Choose a student...</option>
+                        {% for student in students %}
+                        <option value="{{ student.id }}">{{ student.full_name }} ({{ student.student_number }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Meeting Title *</label>
+                    <input type="text" id="meetingTitle" class="form-input" placeholder="e.g., Weekly Check-in" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date & Time *</label>
+                    <input type="datetime-local" id="meetingDateTime" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Duration</label>
+                    <select id="meetingDuration" class="form-select">
+                        <option value="30">30 minutes</option>
+                        <option value="45" selected>45 minutes</option>
+                        <option value="60">60 minutes</option>
+                        <option value="90">90 minutes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Meeting Type</label>
+                    <select id="meetingType" class="form-select">
+                        <option value="video">Video Call</option>
+                        <option value="audio">Audio Call</option>
+                        <option value="in-person">In-Person Session</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Agenda / Notes</label>
+                    <textarea id="meetingAgenda" rows="3" class="form-textarea" placeholder="What will be discussed? Any specific topics?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeScheduleModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-calendar-check"></i> Schedule Meeting
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ========== VIDEO CALL VARIABLES ==========
+    let localStream = null;
+    let peerConnection = null;
+    let isCallActive = false;
+    let recognition = null;
+    let isListening = false;
+    let transcriptionHistory = [];
+    let sessionSummary = [];
+    let currentCallStudent = null;
+    let scheduledMeetings = [];
+    
+    // ========== LOAD BOOKINGS ==========
+    async function loadBookings() {
+        try {
+            const response = await fetch('/api/counsellor/bookings');
+            const bookings = await response.json();
+            displayBookings(bookings);
+        } catch (error) {
+            console.error('Error loading bookings:', error);
+            displayDemoBookings();
+        }
+    }
+    
+    function displayBookings(bookings) {
+        const container = document.getElementById('bookingsList');
+        const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
+        document.getElementById('bookingCount').textContent = `${confirmedBookings.length} confirmed`;
+        
+        if (bookings.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="empty-state-icon">📅</div>
+                    <div class="empty-state-text">No pending bookings. Sessions will appear here when students book.</div>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = bookings.map(booking => `
+            <div class="booking-card" onclick="selectBooking(${booking.id})" data-booking-id="${booking.id}">
+                <div class="booking-student">
+                    <div class="student-avatar">
+                        ${booking.student_name.charAt(0)}
+                    </div>
+                    <div class="student-info">
+                        <h4>${escapeHtml(booking.student_name)}</h4>
+                        <p>${booking.student_number || 'Student'}</p>
+                    </div>
+                    <span class="booking-status status-${booking.status}">
+                        ${booking.status.toUpperCase()}
+                    </span>
+                </div>
+                <div class="booking-details">
+                    <div class="booking-detail-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>${formatDate(booking.preferred_date)}</span>
+                    </div>
+                    <div class="booking-detail-item">
+                        <i class="fas fa-tag"></i>
+                        <span>${booking.session_type || 'Individual Session'}</span>
+                    </div>
+                    ${booking.reason ? `
+                        <div class="booking-detail-item">
+                            <i class="fas fa-comment"></i>
+                            <span>${escapeHtml(booking.reason.substring(0, 100))}${booking.reason.length > 100 ? '...' : ''}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                ${booking.status === 'confirmed' ? `
+                    <button onclick="event.stopPropagation(); startCallWithStudent(${booking.id}, '${booking.student_name}')" class="call-student-btn">
+                        <i class="fas fa-video"></i> Start Video Session
+                    </button>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+    
+    function displayDemoBookings() {
+        const demoBookings = [
+            {
+                id: 1,
+                student_name: "Thabo Mthembu",
+                student_number: "21200001",
+                preferred_date: new Date(Date.now() + 3600000),
+                session_type: "individual",
+                status: "confirmed",
+                reason: "Need help managing exam stress and anxiety"
+            },
+            {
+                id: 2,
+                student_name: "Lerato Khumalo",
+                student_number: "21200002",
+                preferred_date: new Date(Date.now() + 86400000),
+                session_type: "individual",
+                status: "confirmed",
+                reason: "Feeling overwhelmed with academic workload"
+            }
+        ];
+        displayBookings(demoBookings);
+    }
+    
+    // ========== VIDEO CALL FUNCTIONS ==========
+    async function startNewCall() {
+        if (isCallActive) {
+            showToast('A call is already in progress. End it first.', 'error');
+            return;
+        }
+        
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const localVideo = document.getElementById('localVideoElement');
+            if (localVideo) localVideo.srcObject = localStream;
+            
+            document.getElementById('videoContainer').classList.add('active');
+            document.getElementById('startNewCallBtn').style.display = 'none';
+            document.getElementById('joinActiveCallBtn').style.display = 'inline-flex';
+            document.getElementById('endCallBtn').style.display = 'inline-flex';
+            document.getElementById('scheduleMeetingBtn').style.display = 'none';
+            
+            isCallActive = true;
+            startAIAssistant();
+            showToast('Call started. AI assistant is now active and will transcribe the session.', 'success');
+        } catch (error) {
+            console.error('Error accessing media devices:', error);
+            showToast('Unable to access camera/microphone. Please check permissions.', 'error');
+        }
+    }
+    
+    function joinActiveCall() {
+        document.getElementById('waitingMessage').style.display = 'none';
+        showToast('Connected to student session', 'success');
+    }
+    
+    function startCallWithStudent(bookingId, studentName) {
+        if (isCallActive) {
+            showToast('A call is already in progress. End it first.', 'error');
+            return;
+        }
+        
+        currentCallStudent = { id: bookingId, name: studentName };
+        startNewCall();
+        showToast(`Starting call with ${studentName}...`, 'info');
+    }
+    
+    async function endCall() {
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+        if (peerConnection) {
+            peerConnection.close();
+            peerConnection = null;
+        }
+        
+        document.getElementById('videoContainer').classList.remove('active');
+        document.getElementById('startNewCallBtn').style.display = 'inline-flex';
+        document.getElementById('joinActiveCallBtn').style.display = 'none';
+        document.getElementById('endCallBtn').style.display = 'none';
+        document.getElementById('scheduleMeetingBtn').style.display = 'inline-flex';
+        
+        isCallActive = false;
+        stopAIAssistant();
+        generateSessionSummary();
+        showToast('Call ended. Session summary has been generated.', 'info');
+        currentCallStudent = null;
+    }
+    
+    function toggleMic() {
+        if (localStream) {
+            const audioTrack = localStream.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = !audioTrack.enabled;
+                const micBtn = document.getElementById('micBtn');
+                if (audioTrack.enabled) {
+                    micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                    micBtn.classList.remove('disabled');
+                } else {
+                    micBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                    micBtn.classList.add('disabled');
+                }
+            }
+        }
+    }
+    
+    function toggleCamera() {
+        if (localStream) {
+            const videoTrack = localStream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.enabled = !videoTrack.enabled;
+                const cameraBtn = document.getElementById('cameraBtn');
+                if (videoTrack.enabled) {
+                    cameraBtn.innerHTML = '<i class="fas fa-video"></i>';
+                    cameraBtn.classList.remove('disabled');
+                } else {
+                    cameraBtn.innerHTML = '<i class="fas fa-video-slash"></i>';
+                    cameraBtn.classList.add('disabled');
+                }
+            }
+        }
+    }
+    
+    // ========== AI VOICE ASSISTANT ==========
+    function startAIAssistant() {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('aiStatus').innerHTML = '<i class="fas fa-circle" style="font-size: 0.5rem; color: #ef4444;"></i> Listening';
+                addTranscriptionEntry('System', '🎤 AI voice assistant activated - listening to session...');
+            };
+            
+            recognition.onresult = function(event) {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    }
+                }
+                if (finalTranscript) {
+                    addTranscriptionEntry('Student', finalTranscript);
+                    analyzeTranscript(finalTranscript);
+                }
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+            };
+            
+            recognition.start();
+        } else {
+            addTranscriptionEntry('System', '⚠️ Speech recognition not supported. Please use Chrome or Edge for AI features.');
+        }
+    }
+    
+    function stopAIAssistant() {
+        if (recognition) {
+            recognition.stop();
+            isListening = false;
+            document.getElementById('aiStatus').innerHTML = '<i class="fas fa-circle" style="font-size: 0.5rem; color: #10b981;"></i> Ready';
+            addTranscriptionEntry('System', 'AI voice assistant deactivated.');
+        }
+    }
+    
+    function addTranscriptionEntry(speaker, text) {
+        const timestamp = new Date().toLocaleTimeString();
+        transcriptionHistory.push({ speaker, text, timestamp });
+        
+        const transcriptionList = document.getElementById('transcriptionList');
+        const entry = document.createElement('div');
+        entry.className = 'transcription-entry';
+        entry.innerHTML = `
+            <div class="transcription-time">${timestamp} - ${speaker}</div>
+            <div class="transcription-text">${escapeHtml(text)}</div>
+        `;
+        transcriptionList.appendChild(entry);
+        entry.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        sessionSummary.push(text);
+    }
+    
+    function analyzeTranscript(text) {
+        const lowerText = text.toLowerCase();
+        
+        if (lowerText.includes('stress') || lowerText.includes('anxious')) {
+            addTranscriptionEntry('AI Insight', '⚠️ Detected stress/anxiety - suggest coping strategies');
+        }
+        if (lowerText.includes('sleep') || lowerText.includes('tired')) {
+            addTranscriptionEntry('AI Insight', '💤 Sleep concerns mentioned - review sleep hygiene practices');
+        }
+        if (lowerText.includes('exam') || lowerText.includes('study')) {
+            addTranscriptionEntry('AI Insight', '📚 Academic stress detected - discuss time management');
+        }
+        if (lowerText.includes('suicide') || lowerText.includes('self-harm')) {
+            addTranscriptionEntry('AI Insight', '🚨 CRITICAL ALERT - Immediate crisis intervention needed!');
+        }
+    }
+    
+    function generateSessionSummary() {
+        if (sessionSummary.length === 0) return;
+        
+        const summaryBox = document.getElementById('summaryBox');
+        const summaryContent = document.getElementById('summaryContent');
+        const allText = sessionSummary.join(' ').toLowerCase();
+        
+        let keyPoints = [];
+        if (allText.includes('stress')) keyPoints.push('Stress and anxiety discussed');
+        if (allText.includes('sleep')) keyPoints.push('Sleep quality/quantity concerns');
+        if (allText.includes('academic')) keyPoints.push('Academic pressure mentioned');
+        if (allText.includes('relationship')) keyPoints.push('Personal relationships discussed');
+        
+        summaryContent.innerHTML = `
+            <div style="margin-bottom: 1rem;">
+                <strong>Session Duration:</strong> ${Math.floor(sessionSummary.length / 2)} minutes (estimated)
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <strong>Key Discussion Points:</strong>
+                <ul class="key-points-list">
+                    ${keyPoints.map(point => `<li><i class="fas fa-circle" style="font-size: 0.5rem; color: #667eea;"></i> ${point}</li>`).join('')}
+                    ${keyPoints.length === 0 ? '<li>General wellness check-in conducted</li>' : ''}
+                </ul>
+            </div>
+            <div>
+                <strong>Recommended Follow-up Actions:</strong>
+                <ul class="key-points-list">
+                    <li><i class="fas fa-check-circle" style="color: #10b981;"></i> Schedule follow-up session if needed</li>
+                    <li><i class="fas fa-check-circle" style="color: #10b981;"></i> Provide targeted wellness resources</li>
+                    <li><i class="fas fa-check-circle" style="color: #10b981;"></i> Document key concerns in student record</li>
+                </ul>
+            </div>
+        `;
+        summaryBox.style.display = 'block';
+    }
+    
+    function exportSummary() {
+        const summaryContent = document.getElementById('summaryContent').innerText;
+        const studentName = currentCallStudent ? currentCallStudent.name : 'Session';
+        const date = new Date().toLocaleDateString();
+        const exportText = `Session Summary - ${studentName}\nDate: ${date}\n\n${summaryContent}\n\nGenerated by DUT Wellness AI Assistant`;
+        const blob = new Blob([exportText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `session_summary_${studentName.replace(/\s/g, '_')}_${date}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Summary exported successfully', 'success');
+    }
+    
+    function toggleAIPanel() {
+        const content = document.getElementById('aiContent');
+        content.classList.toggle('active');
+    }
+    
+    // ========== MEETING SCHEDULING ==========
+    function openScheduleModal() {
+        document.getElementById('scheduleModal').classList.add('active');
+        const now = new Date();
+        now.setHours(now.getHours() + 1);
+        now.setMinutes(0);
+        document.getElementById('meetingDateTime').value = now.toISOString().slice(0, 16);
+    }
+    
+    function closeScheduleModal() {
+        document.getElementById('scheduleModal').classList.remove('active');
+    }
+    
+    function scheduleMeeting(event) {
+        event.preventDefault();
+        
+        const studentId = document.getElementById('studentSelect').value;
+        const studentName = document.getElementById('studentSelect').options[document.getElementById('studentSelect').selectedIndex]?.text;
+        const title = document.getElementById('meetingTitle').value;
+        const dateTime = document.getElementById('meetingDateTime').value;
+        const duration = parseInt(document.getElementById('meetingDuration').value);
+        const meetingType = document.getElementById('meetingType').value;
+        const agenda = document.getElementById('meetingAgenda').value;
+        
+        if (!studentId || !title || !dateTime) {
+            showToast('Please fill in all required fields', 'error');
+            return;
+        }
+        
+        const meeting = {
+            id: Date.now(),
+            studentId: parseInt(studentId),
+            studentName: studentName.split('(')[0].trim(),
+            title: title,
+            dateTime: new Date(dateTime),
+            duration: duration,
+            type: meetingType,
+            agenda: agenda
+        };
+        
+        scheduledMeetings.push(meeting);
+        updateUpcomingMeetingsDisplay();
+        
+        closeScheduleModal();
+        document.getElementById('scheduleForm').reset();
+        showToast(`Meeting scheduled with ${meeting.studentName}.`, 'success');
+        
+        fetch('/api/schedule-meeting', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(meeting)
+        }).catch(err => console.error('Error:', err));
+    }
+    
+    function updateUpcomingMeetingsDisplay() {
+        const container = document.getElementById('upcomingMeetingsList');
+        const now = new Date();
+        const upcoming = scheduledMeetings.filter(m => m.dateTime > now).sort((a, b) => a.dateTime - b.dateTime);
+        
+        if (upcoming.length === 0) {
+            container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📅</div><div class="empty-state-text">No upcoming meetings scheduled</div></div>`;
+            return;
+        }
+        
+        container.innerHTML = upcoming.map(meeting => `
+            <div class="booking-card" style="margin-bottom: 1rem;">
+                <div class="booking-student">
+                    <div class="student-avatar"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="student-info">
+                        <h4>${escapeHtml(meeting.title)}</h4>
+                        <p>with ${escapeHtml(meeting.studentName)}</p>
+                    </div>
+                    <span class="booking-status status-confirmed">SCHEDULED</span>
+                </div>
+                <div class="booking-details">
+                    <div class="booking-detail-item"><i class="fas fa-calendar"></i><span>${formatDateTime(meeting.dateTime)}</span></div>
+                    <div class="booking-detail-item"><i class="fas fa-clock"></i><span>${meeting.duration} minutes</span></div>
+                    <div class="booking-detail-item"><i class="fas fa-video"></i><span>${meeting.type === 'video' ? 'Video Call' : meeting.type === 'audio' ? 'Audio Call' : 'In-Person Session'}</span></div>
+                    ${meeting.agenda ? `<div class="booking-detail-item"><i class="fas fa-list"></i><span>${escapeHtml(meeting.agenda.substring(0, 100))}</span></div>` : ''}
+                </div>
+                <button onclick="startCallWithStudent(${meeting.studentId}, '${meeting.studentName}')" class="call-student-btn"><i class="fas fa-video"></i> Join Meeting</button>
+            </div>
+        `).join('');
+    }
+    
+    // ========== UTILITY FUNCTIONS ==========
+    function formatDate(dateStr) {
+        if (!dateStr) return 'Date TBD';
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diff = date - now;
+        if (diff < 0) return 'Past';
+        if (diff < 3600000) return `In ${Math.floor(diff / 60000)} minutes`;
+        if (diff < 86400000) return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        return date.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    
+    function formatDateTime(date) {
+        return date.toLocaleString('en-ZA', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i><span>${escapeHtml(message)}</span>`;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.animation = 'slideInRight 0.3s ease reverse'; setTimeout(() => toast.remove(), 300); }, 5000);
+    }
+    
+    function selectBooking(bookingId) {
+        document.querySelectorAll('.booking-card').forEach(card => card.classList.remove('selected'));
+        document.querySelector(`.booking-card[data-booking-id="${bookingId}"]`)?.classList.add('selected');
+    }
+    
+    // Request notification permission
+    if ('Notification' in window && Notification.permission !== 'denied') Notification.requestPermission();
+    
+    // ========== INITIALIZATION ==========
+    document.addEventListener('DOMContentLoaded', () => {
+        loadBookings();
+        updateUpcomingMeetingsDisplay();
+        document.getElementById('aiContent').classList.remove('active');
+        
+        // Attach event listeners
+        document.getElementById('startNewCallBtn').onclick = startNewCall;
+        document.getElementById('scheduleMeetingBtn').onclick = openScheduleModal;
+        document.getElementById('scheduleQuickBtn').onclick = openScheduleModal;
+        document.getElementById('endCallBtn').onclick = endCall;
+        document.getElementById('endCallBtnControl').onclick = endCall;
+        document.getElementById('micBtn').onclick = toggleMic;
+        document.getElementById('cameraBtn').onclick = toggleCamera;
+        document.getElementById('scheduleForm').onsubmit = scheduleMeeting;
+    });
+</script>
+{% endblock %}
