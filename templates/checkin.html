@@ -2,78 +2,961 @@
 {% block title %}Daily Check-in – DUT Wellness{% endblock %}
 {% block page_title %}Daily Check-in{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ─── Page Layout ─── */
+  .ci-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.5rem;
+    align-items: start;
+    max-width: 1100px;
+  }
+
+  /* Voice Assistant Card */
+  .voice-assistant-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+  
+  .voice-assistant-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+  
+  @keyframes pulseGlow {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.1); opacity: 0.6; }
+  }
+  
+  .voice-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .voice-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    animation: iconPulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes iconPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
+  }
+  
+  .voice-title {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  
+  .voice-subtitle {
+    font-size: 0.7rem;
+    opacity: 0.9;
+  }
+  
+  .mic-button {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .mic-button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  
+  .mic-button.listening {
+    background: #ef4444;
+    color: white;
+    animation: buttonPulse 1s ease-in-out infinite;
+  }
+  
+  @keyframes buttonPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+  
+  .transcription-box {
+    background: rgba(255,255,255,0.95);
+    border-radius: 12px;
+    padding: 0.8rem;
+    margin-top: 1rem;
+    max-height: 150px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .transcription-text {
+    color: #1f2937;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  
+  .ai-suggestions {
+    background: rgba(255,255,255,0.95);
+    border-radius: 12px;
+    padding: 0.8rem;
+    margin-top: 0.8rem;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .suggestion-item {
+    padding: 0.4rem;
+    margin-bottom: 0.4rem;
+    background: #f3f4f6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #374151;
+  }
+
+  /* ─── Step Progress Bar ─── */
+  .step-bar {
+    display: flex; align-items: center;
+    gap: 0; margin-bottom: 1.8rem;
+  }
+  .step {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.72rem; font-weight: 600;
+    color: #bbb; position: relative;
+  }
+  .step.active { color: var(--dut-blue); }
+  .step.done   { color: #10b981; }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700;
+    background: #f1f5f9; color: #aaa; flex-shrink: 0;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s;
+  }
+  .step.active .step-num { background: var(--dut-blue); color: white; border-color: var(--dut-blue); }
+  .step.done   .step-num { background: #10b981; color: white; border-color: #10b981; }
+  .step-line { flex: 1; height: 2px; background: #e2e8f0; margin: 0 8px; min-width: 24px; }
+  .step-line.done { background: #10b981; }
+
+  /* ─── Section Card ─── */
+  .ci-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.6rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    margin-bottom: 1rem;
+    position: relative;
+    transition: box-shadow 0.2s;
+  }
+  .ci-card:focus-within { box-shadow: 0 0 0 3px rgba(0,48,135,0.07), 0 4px 16px rgba(0,0,0,0.06); }
+  .ci-card-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 1.4rem;
+  }
+  .ci-card-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0;
+  }
+  .ci-card-icon.blue   { background: var(--dut-light); color: var(--dut-blue); }
+  .ci-card-icon.green  { background: #ecfdf5; color: #059669; }
+  .ci-card-icon.orange { background: #fff7ed; color: #ea580c; }
+  .ci-card-icon.purple { background: #f5f3ff; color: #7c3aed; }
+  .ci-card-title { font-size: 0.92rem; font-weight: 700; color: var(--text); }
+  .ci-card-sub   { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* ─── MOOD SECTION ─── */
+  .mood-display-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.2rem;
+  }
+  .mood-emoji-big {
+    font-size: 3.5rem; line-height: 1;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+  }
+  .mood-score-display {
+    text-align: right;
+  }
+  .mood-score-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem; font-weight: 700;
+    color: var(--text); line-height: 1;
+    transition: color 0.3s;
+  }
+  .mood-score-label {
+    font-size: 0.75rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.07em;
+  }
+  .mood-description {
+    text-align: center; font-size: 0.85rem;
+    font-weight: 600; color: var(--text);
+    margin-bottom: 1rem; min-height: 22px;
+    transition: all 0.3s;
+  }
+
+  /* Gradient track slider */
+  .mood-track {
+    position: relative; margin-bottom: 0.8rem;
+  }
+  .mood-slider-custom {
+    -webkit-appearance: none;
+    width: 100%; height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #ef4444 0%, #f97316 25%, #eab308 50%, #22c55e 75%, #10b981 100%);
+    outline: none; cursor: pointer;
+  }
+  .mood-slider-custom::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: white;
+    border: 3px solid var(--dut-blue);
+    box-shadow: 0 2px 10px rgba(0,48,135,0.25);
+    cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .mood-slider-custom::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 16px rgba(0,48,135,0.35);
+  }
+  .mood-ticks {
+    display: flex; justify-content: space-between;
+    padding: 0 2px; margin-top: 6px;
+  }
+  .mood-ticks span {
+    font-size: 0.65rem; color: #ccc; font-weight: 600;
+    width: 20px; text-align: center;
+  }
+  .mood-labels {
+    display: flex; justify-content: space-between;
+    margin-top: 4px;
+  }
+  .mood-labels span { font-size: 0.72rem; color: var(--text-muted); }
+
+  /* ─── STRESS & SLEEP ─── */
+  .ss-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* Custom select */
+  .ci-select {
+    width: 100%; padding: 10px 36px 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; color: var(--text);
+    background: #fafafa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+    -webkit-appearance: none; appearance: none;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .ci-select:focus {
+    border-color: var(--dut-blue);
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(0,48,135,0.08);
+  }
+  .ci-label {
+    display: block; font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: #555; margin-bottom: 6px;
+  }
+
+  /* Stress level visual indicator */
+  .stress-indicator {
+    display: flex; gap: 4px; margin-top: 8px;
+  }
+  .stress-bar {
+    flex: 1; height: 5px; border-radius: 3px;
+    background: #f1f5f9; transition: background 0.3s;
+  }
+
+  /* ─── ACTIVITY PILLS ─── */
+  .activity-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .activity-option { position: relative; }
+  .activity-option input[type="radio"] { position: absolute; opacity: 0; }
+  .activity-label {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 10px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px; cursor: pointer;
+    font-size: 0.78rem; font-weight: 600; color: #555;
+    text-align: center;
+    transition: all 0.2s;
+    background: #fafafa;
+  }
+  .activity-label:hover { border-color: var(--dut-blue); color: var(--dut-blue); background: var(--dut-light); }
+  .activity-option input:checked + .activity-label {
+    border-color: var(--dut-blue);
+    background: var(--dut-blue);
+    color: white;
+    box-shadow: 0 3px 10px rgba(0,48,135,0.25);
+  }
+  .activity-icon { font-size: 1.1rem; }
+
+  /* ─── NOTES SECTION ─── */
+  .ci-textarea {
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; color: var(--text);
+    background: #fafafa; resize: vertical; min-height: 110px;
+    outline: none; line-height: 1.6;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .ci-textarea:focus {
+    border-color: var(--dut-blue); background: white;
+    box-shadow: 0 0 0 3px rgba(0,48,135,0.08);
+  }
+  .ci-textarea::placeholder { color: #ccc; }
+  .char-count {
+    display: flex; justify-content: space-between;
+    margin-top: 6px; font-size: 0.68rem; color: var(--text-muted);
+  }
+
+  /* ─── SUBMIT BUTTON ─── */
+  .submit-btn {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, var(--dut-blue) 0%, #1d4ed8 100%);
+    color: white; border: none; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.02em;
+    box-shadow: 0 4px 18px rgba(0,48,135,0.30);
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .submit-btn:hover { box-shadow: 0 8px 28px rgba(0,48,135,0.40); transform: translateY(-1px); }
+  .submit-btn:active { transform: translateY(0); }
+  .cancel-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; padding: 11px;
+    background: #f8fafc; color: var(--text-muted);
+    border: 1.5px solid var(--border); border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 600;
+    text-decoration: none; margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .cancel-btn:hover { background: #f1f5f9; color: var(--text); }
+
+  /* ─── RIGHT SIDEBAR ─── */
+  .ci-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+
+  /* Streak card */
+  .streak-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    border-radius: 16px; padding: 1.4rem;
+    color: white; text-align: center;
+  }
+  .streak-num { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 700; color: white; line-height: 1; }
+  .streak-label { font-size: 0.72rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+  .streak-badge { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 600; }
+
+  /* Tips card */
+  .tips-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.3rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .tips-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.82rem; font-weight: 700; color: var(--text);
+    margin-bottom: 1rem;
+  }
+  .tips-title i { color: var(--dut-blue); }
+  .tip-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 8px 10px; background: #f8fafc;
+    border-radius: 8px; font-size: 0.74rem;
+    color: var(--text-muted); line-height: 1.5;
+    margin-bottom: 6px;
+    border-left: 3px solid var(--dut-blue);
+  }
+  .tip-item:last-child { margin-bottom: 0; }
+  .tip-item i { color: var(--dut-blue); margin-top: 2px; flex-shrink: 0; font-size: 0.7rem; }
+
+  /* Privacy notice */
+  .privacy-notice {
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 12px; padding: 1rem 1.2rem;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .privacy-notice i { color: #059669; margin-top: 2px; flex-shrink: 0; }
+  .privacy-notice p { font-size: 0.74rem; color: #065f46; line-height: 1.5; }
+  .privacy-notice strong { font-weight: 700; }
+
+  /* Previous check-in preview */
+  .prev-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.3rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .prev-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 0.8rem; }
+  .prev-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f8fafc; font-size: 0.76rem; }
+  .prev-row:last-child { border-bottom: none; }
+  .prev-key { color: var(--text-muted); }
+  .prev-val { font-weight: 700; color: var(--text); }
+
+  @media (max-width: 900px) {
+    .ci-wrapper { grid-template-columns: 1fr; }
+    .ci-sidebar { display: none; }
+    .ss-grid { grid-template-columns: 1fr; }
+    .activity-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 500px) {
+    .activity-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
+
+<!-- Page Header -->
 <div class="page-header">
   <h1>Daily Wellness Check-in</h1>
-  <p>Takes less than 2 minutes. Your data is private and secure.</p>
+  <p>Takes less than 2 minutes · Your data is private and secure</p>
 </div>
 
-<div style="max-width:600px;">
-  <form method="POST" action="{{ url_for('checkin') }}">
-    <!-- Mood -->
-    <div class="card mb-3">
-      <div class="card-title"><i class="fa-solid fa-face-smile-beam"></i> How are you feeling today?</div>
-      <div class="mood-emoji" id="mood-emoji">😐</div>
-      <div class="mood-value" id="mood-value">5</div>
-      <div class="mood-display">
-        <span>😭 Terrible</span><span>😊 Great</span>
-      </div>
-      <input type="range" id="mood-slider" name="mood_score" min="1" max="10" value="5" class="mood-slider">
-      <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:#bbb;">
-        <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
-      </div>
-    </div>
+<!-- Main Layout -->
+<div class="ci-wrapper">
 
-    <!-- Stress & Sleep -->
-    <div class="card mb-3">
-      <div class="card-title"><i class="fa-solid fa-brain"></i> Stress & Sleep</div>
-      <div class="grid-2">
-        <div class="form-group">
-          <label class="form-label">Stress Level (1–10)</label>
-          <select name="stress_level" class="form-select">
-            <option value="">Select...</option>
-            {% for i in range(1,11) %}<option value="{{ i }}">{{ i }} – {% if i<=3 %}Low{% elif i<=6 %}Moderate{% else %}High{% endif %}</option>{% endfor %}
-          </select>
+  <!-- ── LEFT: FORM ── -->
+  <div>
+    <!-- Voice Assistant Card -->
+    <div class="voice-assistant-card">
+      <div class="voice-header">
+        <div class="voice-icon">
+          <i class="fas fa-microphone-alt"></i>
         </div>
-        <div class="form-group">
-          <label class="form-label">Sleep Last Night (hours)</label>
-          <select name="sleep_hours" class="form-select">
-            <option value="">Select...</option>
-            <option value="3">Less than 4 hrs</option>
-            <option value="4.5">4–5 hrs</option>
-            <option value="6">5–6 hrs</option>
-            <option value="7">6–7 hrs</option>
-            <option value="8">7–8 hrs ✓</option>
-            <option value="9">8+ hrs</option>
-          </select>
+        <div>
+          <div class="voice-title">AI Voice Assistant</div>
+          <div class="voice-subtitle">Speak naturally and I'll help you log your check-in</div>
         </div>
       </div>
-    </div>
-
-    <!-- Physical Activity -->
-    <div class="card mb-3">
-      <div class="card-title"><i class="fa-solid fa-person-running"></i> Physical Activity Today</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        {% for act in ['None','Light walk','Exercise','Sport','Gym','Yoga/Stretch'] %}
-        <label style="display:flex;align-items:center;gap:6px;padding:8px 14px;border:1.5px solid var(--border);border-radius:100px;cursor:pointer;font-size:0.85rem;transition:all 0.2s;">
-          <input type="radio" name="physical_activity" value="{{ act }}" style="accent-color:var(--dut-blue);">
-          {{ act }}
-        </label>
-        {% endfor %}
+      
+      <button id="micButton" class="mic-button">
+        <i class="fas fa-microphone"></i>
+        Start Voice Assistant
+      </button>
+      
+      <div id="transcriptionBox" class="transcription-box" style="display: none;">
+        <div id="transcriptionText" class="transcription-text"></div>
+      </div>
+      
+      <div id="aiSuggestions" class="ai-suggestions" style="display: none;">
+        <div style="font-weight: 600; margin-bottom: 0.5rem; color: #374151;">🤖 AI Suggestions:</div>
+        <div id="suggestionsList"></div>
       </div>
     </div>
 
-    <!-- Notes -->
-    <div class="card mb-3">
-      <div class="card-title"><i class="fa-solid fa-pen"></i> Anything on your mind?</div>
-      <textarea name="notes" class="form-textarea" placeholder="Optional – share what's going on (private)..." rows="4"></textarea>
-      <p style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;"><i class="fa-solid fa-lock"></i> This is private and only visible to your counsellor if needed.</p>
+    <!-- Step Progress Bar -->
+    <div class="step-bar mb-3">
+      <div class="step active">
+        <div class="step-num">1</div>
+        <span>Mood</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <span>Stress &amp; Sleep</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <span>Activity</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <span>Notes</span>
+      </div>
     </div>
 
-    <button type="submit" class="btn btn-primary btn-block" style="padding:14px;font-size:1rem;">
-      <i class="fa-solid fa-circle-check"></i> Submit Check-in
-    </button>
-    <a href="{{ url_for('student_dashboard') }}" class="btn btn-ghost btn-block mt-1">Cancel</a>
-  </form>
+    <form method="POST" action="{{ url_for('checkin') }}" id="ci-form">
+
+      <!-- STEP 1: MOOD -->
+      <div class="ci-card">
+        <div class="ci-card-header">
+          <div class="ci-card-icon blue"><i class="fa-solid fa-face-smile-beam"></i></div>
+          <div>
+            <div class="ci-card-title">How are you feeling today?</div>
+            <div class="ci-card-sub">Drag the slider to rate your overall mood</div>
+          </div>
+        </div>
+
+        <div class="mood-display-row">
+          <div class="mood-emoji-big" id="mood-emoji">😐</div>
+          <div class="mood-score-display">
+            <div class="mood-score-num" id="mood-score-num">5</div>
+            <div class="mood-score-label">out of 10</div>
+          </div>
+        </div>
+
+        <div class="mood-description" id="mood-desc">Neutral — Neither good nor bad</div>
+
+        <div class="mood-track">
+          <input type="range" id="mood-slider" name="mood_score"
+                 min="1" max="10" value="5"
+                 class="mood-slider-custom">
+        </div>
+        <div class="mood-ticks">
+          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+          <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+        </div>
+        <div class="mood-labels">
+          <span>😭 Terrible</span>
+          <span>😊 Excellent</span>
+        </div>
+      </div>
+
+      <!-- STEP 2: STRESS & SLEEP -->
+      <div class="ci-card">
+        <div class="ci-card-header">
+          <div class="ci-card-icon green"><i class="fa-solid fa-brain"></i></div>
+          <div>
+            <div class="ci-card-title">Stress &amp; Sleep</div>
+            <div class="ci-card-sub">Rate your stress and last night's sleep</div>
+          </div>
+        </div>
+
+        <div class="ss-grid">
+          <div>
+            <label class="ci-label">Stress Level</label>
+            <select name="stress_level" class="ci-select" id="stress-select" onchange="updateStressBars(this.value)">
+              <option value="">Select level...</option>
+              {% for i in range(1,11) %}
+              <option value="{{ i }}">{{ i }} –
+                {% if i<=3 %}🟢 Low
+                {% elif i<=6 %}🟡 Moderate
+                {% else %}🔴 High{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+            <div class="stress-indicator" id="stress-bars">
+              {% for i in range(10) %}
+              <div class="stress-bar" id="sb-{{ i }}"></div>
+              {% endfor %}
+            </div>
+          </div>
+          <div>
+            <label class="ci-label">Sleep Last Night</label>
+            <select name="sleep_hours" class="ci-select" id="sleep-select">
+              <option value="">Select hours...</option>
+              <option value="3">😴 Less than 4 hrs</option>
+              <option value="4.5">😪 4–5 hrs</option>
+              <option value="6">🙁 5–6 hrs</option>
+              <option value="7">🙂 6–7 hrs</option>
+              <option value="8">😊 7–8 hrs ✓</option>
+              <option value="9">😁 8+ hrs</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: PHYSICAL ACTIVITY -->
+      <div class="ci-card">
+        <div class="ci-card-header">
+          <div class="ci-card-icon orange"><i class="fa-solid fa-person-running"></i></div>
+          <div>
+            <div class="ci-card-title">Physical Activity Today</div>
+            <div class="ci-card-sub">Select the activity that best describes your day</div>
+          </div>
+        </div>
+
+        <div class="activity-grid" id="activity-grid">
+          {% set activities = [
+            ('None',         'fa-couch',          'Rest Day'),
+            ('Light walk',   'fa-person-walking',  'Light Walk'),
+            ('Exercise',     'fa-dumbbell',        'Exercise'),
+            ('Sport',        'fa-futbol',          'Sport'),
+            ('Gym',          'fa-weight-hanging',  'Gym'),
+            ('Yoga/Stretch', 'fa-om',              'Yoga / Stretch')
+          ] %}
+          {% for val, icon, label in activities %}
+          <div class="activity-option">
+            <input type="radio" name="physical_activity"
+                   id="act-{{ loop.index }}" value="{{ val }}"
+                   {% if loop.first %}checked{% endif %}>
+            <label class="activity-label" for="act-{{ loop.index }}">
+              <i class="fa-solid {{ icon }} activity-icon"></i>
+              {{ label }}
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- STEP 4: NOTES -->
+      <div class="ci-card">
+        <div class="ci-card-header">
+          <div class="ci-card-icon purple"><i class="fa-solid fa-pen-to-square"></i></div>
+          <div>
+            <div class="ci-card-title">Anything on your mind?</div>
+            <div class="ci-card-sub">Optional — share thoughts, worries, or wins</div>
+          </div>
+        </div>
+
+        <textarea name="notes" id="ci-notes" class="ci-textarea"
+                  placeholder="e.g. Feeling overwhelmed with exams, but had a good study session today..."
+                  rows="4" maxlength="500"
+                  oninput="updateCharCount(this)"></textarea>
+        <div class="char-count">
+          <span><i class="fa-solid fa-lock" style="font-size:0.65rem;"></i> Private — only visible to you and your counsellor if needed</span>
+          <span id="char-count">0 / 500</span>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <button type="submit" class="submit-btn">
+        <i class="fa-solid fa-circle-check"></i>
+        Submit Today's Check-in
+      </button>
+      <a href="{{ url_for('student_dashboard') }}" class="cancel-btn">
+        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+      </a>
+
+    </form>
+  </div>
+
+  <!-- ── RIGHT: SIDEBAR ── -->
+  <div class="ci-sidebar">
+
+    <!-- Streak -->
+    <div class="streak-card">
+      <div style="font-size:1.5rem;margin-bottom:6px;">🔥</div>
+      <div class="streak-num">{{ checkins_count if checkins_count is defined else current_user.checkins|length }}</div>
+      <div class="streak-label">Total Check-ins</div>
+      <div class="streak-badge">
+        <i class="fa-solid fa-star" style="font-size:0.65rem;color:#fbbf24;"></i>
+        Keep the streak going!
+      </div>
+    </div>
+
+    <!-- Previous Check-in -->
+    {% set last = current_user.checkins|sort(attribute='timestamp', reverse=true)|first if current_user.checkins else none %}
+    {% if last %}
+    <div class="prev-card">
+      <div class="prev-title">Last Check-in</div>
+      <div class="prev-row">
+        <span class="prev-key">Date</span>
+        <span class="prev-val">{{ last.timestamp.strftime('%d %b %Y') }}</span>
+      </div>
+      <div class="prev-row">
+        <span class="prev-key">Mood</span>
+        <span class="prev-val" style="color:{% if last.mood_score>=8 %}#10b981{% elif last.mood_score>=6 %}var(--dut-blue){% elif last.mood_score>=4 %}#f97316{% else %}#ef4444{% endif %};">
+          {{ last.mood_score }}/10
+        </span>
+      </div>
+      {% if last.stress_level %}
+      <div class="prev-row">
+        <span class="prev-key">Stress</span>
+        <span class="prev-val">{{ last.stress_level }}/10</span>
+      </div>
+      {% endif %}
+      {% if last.sleep_hours %}
+      <div class="prev-row">
+        <span class="prev-key">Sleep</span>
+        <span class="prev-val">{{ last.sleep_hours }}h</span>
+      </div>
+      {% endif %}
+      {% if last.ai_feedback %}
+      <div style="margin-top:10px;padding:8px 10px;background:#f8fafc;border-radius:8px;font-size:0.72rem;color:var(--text-muted);border-left:3px solid var(--dut-blue);line-height:1.5;">
+        <strong style="color:var(--text);">AI Tip:</strong> {{ last.ai_feedback.split('|')[0].strip() }}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Wellness Tips -->
+    <div class="tips-card">
+      <div class="tips-title">
+        <i class="fa-solid fa-lightbulb"></i>
+        Wellness Tips
+      </div>
+      <div class="tip-item"><i class="fa-solid fa-circle-dot"></i> Check in daily to build a clearer picture of your mental health over time.</div>
+      <div class="tip-item"><i class="fa-solid fa-circle-dot"></i> Honesty matters — your data is private and helps counsellors support you better.</div>
+      <div class="tip-item"><i class="fa-solid fa-circle-dot"></i> If your mood is consistently low, please consider booking a session.</div>
+    </div>
+
+    <!-- Privacy notice -->
+    <div class="privacy-notice">
+      <i class="fa-solid fa-shield-halved"></i>
+      <p><strong>Your privacy is protected.</strong> Check-in data is stored securely and only shared with assigned counsellors when needed. It is never shared with academic staff.</p>
+    </div>
+
+  </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Mood configuration
+  const moods = {
+    1:  { emoji:'😭', desc:'Very Low — Struggling a lot today',          color:'#ef4444' },
+    2:  { emoji:'😢', desc:'Low — Having a tough time',                  color:'#f97316' },
+    3:  { emoji:'😞', desc:'Below Average — Not feeling great',          color:'#f97316' },
+    4:  { emoji:'😟', desc:'Somewhat Low — A bit down today',            color:'#eab308' },
+    5:  { emoji:'😐', desc:'Neutral — Neither good nor bad',             color:'#64748b' },
+    6:  { emoji:'🙂', desc:'Okay — Getting through the day',             color:'#0ea5e9' },
+    7:  { emoji:'😊', desc:'Good — Feeling reasonably well',             color:'#003087' },
+    8:  { emoji:'😄', desc:'Great — Having a solid day',                 color:'#10b981' },
+    9:  { emoji:'😁', desc:'Very Good — Feeling really positive',        color:'#10b981' },
+    10: { emoji:'🤩', desc:'Excellent — At my best today!',              color:'#059669' },
+  };
+
+  const slider  = document.getElementById('mood-slider');
+  const emoji   = document.getElementById('mood-emoji');
+  const scoreEl = document.getElementById('mood-score-num');
+  const descEl  = document.getElementById('mood-desc');
+
+  function updateMood() {
+    const v = parseInt(slider.value);
+    const m = moods[v];
+    emoji.textContent   = m.emoji;
+    scoreEl.textContent = v;
+    scoreEl.style.color = m.color;
+    descEl.textContent  = m.desc;
+    descEl.style.color  = m.color;
+  }
+  slider.addEventListener('input', updateMood);
+  updateMood();
+
+  // Stress bars
+  function updateStressBars(val) {
+    const n = parseInt(val) || 0;
+    for (let i = 0; i < 10; i++) {
+      const bar = document.getElementById('sb-' + i);
+      if (i < n) {
+        bar.style.background = n <= 3 ? '#10b981' : n <= 6 ? '#eab308' : '#ef4444';
+      } else {
+        bar.style.background = '#f1f5f9';
+      }
+    }
+  }
+
+  // Char count
+  function updateCharCount(el) {
+    document.getElementById('char-count').textContent = el.value.length + ' / 500';
+  }
+
+  // Animate steps as user interacts
+  const cards = document.querySelectorAll('.ci-card');
+  const steps = document.querySelectorAll('.step');
+  const lines = document.querySelectorAll('.step-line');
+
+  function markStep(index) {
+    steps.forEach((s, i) => {
+      s.classList.remove('active', 'done');
+      if (i < index) {
+        s.classList.add('done');
+        s.querySelector('.step-num').innerHTML = '<i class="fa-solid fa-check" style="font-size:0.6rem;"></i>';
+      } else if (i === index) {
+        s.classList.add('active');
+      }
+    });
+    lines.forEach((l, i) => {
+      l.classList.toggle('done', i < index);
+    });
+  }
+
+  cards.forEach((card, i) => {
+    card.addEventListener('focusin', () => markStep(i));
+  });
+
+  // ========== AI VOICE ASSISTANT ==========
+  let recognition = null;
+  let isListening = false;
+  let transcribedText = '';
+
+  // Initialize Speech Recognition
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    
+    recognition.onstart = function() {
+      isListening = true;
+      const micBtn = document.getElementById('micButton');
+      micBtn.classList.add('listening');
+      micBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Listening';
+      document.getElementById('transcriptionBox').style.display = 'block';
+      transcribedText = '';
+      document.getElementById('transcriptionText').innerHTML = '<em>Listening... Speak about your day</em>';
+    };
+    
+    recognition.onresult = function(event) {
+      let interimTranscript = '';
+      let finalTranscript = '';
+      
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+      
+      transcribedText = finalTranscript;
+      const displayText = finalTranscript || interimTranscript;
+      document.getElementById('transcriptionText').innerHTML = displayText || '<em>Listening...</em>';
+      
+      // Process voice input for AI suggestions
+      if (finalTranscript) {
+        processVoiceInput(finalTranscript);
+      }
+    };
+    
+    recognition.onerror = function(event) {
+      console.error('Speech recognition error:', event.error);
+      stopListening();
+      alert('Microphone error. Please check your permissions and try again.');
+    };
+    
+    recognition.onend = function() {
+      stopListening();
+    };
+  }
+
+  function stopListening() {
+    if (recognition) {
+      recognition.stop();
+    }
+    isListening = false;
+    const micBtn = document.getElementById('micButton');
+    micBtn.classList.remove('listening');
+    micBtn.innerHTML = '<i class="fas fa-microphone"></i> Start Voice Assistant';
+  }
+
+  function startListening() {
+    if (recognition) {
+      recognition.start();
+    } else {
+      alert('Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.');
+    }
+  }
+
+  // Toggle microphone
+  document.getElementById('micButton').addEventListener('click', function() {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  });
+
+  // Process voice input and generate AI suggestions
+  function processVoiceInput(text) {
+    const lowerText = text.toLowerCase();
+    const suggestions = [];
+    
+    // Mood detection
+    if (lowerText.includes('happy') || lowerText.includes('great') || lowerText.includes('good') || lowerText.includes('wonderful')) {
+      suggestions.push('😊 Detected positive mood - Great to hear! Keep up the good spirits.');
+      slider.value = 8;
+      updateMood();
+    } else if (lowerText.includes('sad') || lowerText.includes('down') || lowerText.includes('depressed') || lowerText.includes('unhappy')) {
+      suggestions.push('😔 Detected low mood - Consider talking to someone you trust or booking a counselling session.');
+      slider.value = 3;
+      updateMood();
+    } else if (lowerText.includes('stressed') || lowerText.includes('anxious') || lowerText.includes('overwhelmed') || lowerText.includes('pressure')) {
+      suggestions.push('😰 Detected stress - Try deep breathing exercises or take a short break to reset.');
+      const stressSelect = document.getElementById('stress-select');
+      stressSelect.value = '8';
+      updateStressBars('8');
+    } else if (lowerText.includes('tired') || lowerText.includes('exhausted') || lowerText.includes('fatigued')) {
+      suggestions.push('😴 Detected fatigue - Prioritize rest and aim for 7-8 hours of sleep tonight.');
+    } else if (lowerText.includes('energetic') || lowerText.includes('active') || lowerText.includes('motivated')) {
+      suggestions.push('⚡ Great energy! Channel it into something productive or enjoyable.');
+    }
+    
+    // Sleep detection
+    const sleepMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:hour|hr)/i);
+    if (sleepMatch) {
+      const sleepHours = parseFloat(sleepMatch[1]);
+      if (sleepHours < 6) {
+        suggestions.push(`😴 You mentioned ${sleepHours} hours of sleep - Try to aim for 7-8 hours for optimal wellness.`);
+      } else if (sleepHours >= 7 && sleepHours <= 9) {
+        suggestions.push(`✅ Great sleep duration of ${sleepHours} hours! This supports mental and physical health.`);
+      }
+      const sleepSelect = document.getElementById('sleep-select');
+      if (sleepHours <= 4.5) sleepSelect.value = '4.5';
+      else if (sleepHours <= 6) sleepSelect.value = '6';
+      else if (sleepHours <= 7) sleepSelect.value = '7';
+      else if (sleepHours <= 8) sleepSelect.value = '8';
+      else if (sleepHours > 8) sleepSelect.value = '9';
+    }
+    
+    // Activity detection
+    if (lowerText.includes('walk') || lowerText.includes('walked')) {
+      suggestions.push('🚶‍♂️ Walking is excellent for mental clarity and physical health!');
+      document.querySelector('input[value="Light walk"]').checked = true;
+    } else if (lowerText.includes('run') || lowerText.includes('running') || lowerText.includes('jog')) {
+      suggestions.push('🏃‍♂️ Running is great for endorphins! Keep up the good work.');
+      document.querySelector('input[value="Exercise"]').checked = true;
+    } else if (lowerText.includes('gym') || lowerText.includes('workout') || lowerText.includes('weights')) {
+      suggestions.push('💪 Strength training builds resilience - both physical and mental!');
+      document.querySelector('input[value="Gym"]').checked = true;
+    } else if (lowerText.includes('yoga') || lowerText.includes('stretch')) {
+      suggestions.push('🧘 Yoga and stretching promote mindfulness and reduce stress. Excellent choice!');
+      document.querySelector('input[value="Yoga/Stretch"]').checked = true;
+    }
+    
+    // Show suggestions
+    if (suggestions.length > 0) {
+      const suggestionsDiv = document.getElementById('aiSuggestions');
+      const suggestionsList = document.getElementById('suggestionsList');
+      suggestionsList.innerHTML = suggestions.map(s => `<div class="suggestion-item"><i class="fas fa-lightbulb" style="color: #f59e0b;"></i> ${s}</div>`).join('');
+      suggestionsDiv.style.display = 'block';
+      
+      // Auto-fill notes with transcribed text if not already filled
+      const notesField = document.getElementById('ci-notes');
+      if (!notesField.value) {
+        notesField.value = text;
+        updateCharCount(notesField);
+      }
+    }
+  }
+</script>
 {% endblock %}
