@@ -1,58 +1,778 @@
 {% extends "base.html" %}
-{% block title %}Counsellor Dashboard{% endblock %}
+{% block title %}Counsellor Dashboard – DUT Wellness{% endblock %}
 {% block page_title %}Counsellor Dashboard{% endblock %}
-{% block extra_css %}<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<style>
+  /* ─── KPI Cards ─── */
+  .cd-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.4rem;
+  }
+  .cd-kpi {
+    background: white; border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.2rem 1.3rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .cd-kpi:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
+  .cd-kpi::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .cd-kpi.k-blue::before   { background: var(--dut-blue); }
+  .cd-kpi.k-amber::before  { background: #f59e0b; }
+  .cd-kpi.k-red::before    { background: #ef4444; }
+  .cd-kpi.k-green::before  { background: #10b981; }
+  .cd-kpi.k-purple::before { background: #8b5cf6; }
+  .cd-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .cd-kpi-icon { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+  .ki-blue   { background: var(--dut-light); color: var(--dut-blue); }
+  .ki-amber  { background: #fffbeb; color: #b45309; }
+  .ki-red    { background: #fef2f2; color: #dc2626; }
+  .ki-green  { background: #ecfdf5; color: #059669; }
+  .ki-purple { background: #f5f3ff; color: #7c3aed; }
+  .cd-kpi-badge { font-size: 0.6rem; font-weight: 700; padding: 3px 8px; border-radius: 100px; }
+  .kb-red    { background: #fef2f2; color: #991b1b; }
+  .kb-amber  { background: #fffbeb; color: #b45309; }
+  .kb-green  { background: #ecfdf5; color: #065f46; }
+  .kb-neu    { background: #f1f5f9; color: #64748b; }
+  .cd-kpi-val { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--text); line-height: 1; }
+  .cd-kpi-lbl { font-size: 0.71rem; color: var(--text-muted); margin-top: 4px; }
+  .cd-kpi-bar { height: 3px; background: #f1f5f9; border-radius: 2px; margin-top: 10px; }
+  .cd-kpi-bar span { display: block; height: 100%; border-radius: 2px; }
+
+  /* Video Call & Meeting Styles */
+  .meeting-controls {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 14px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .meeting-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .meeting-title {
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .meeting-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .meeting-btn {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+  }
+  
+  .meeting-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-1px);
+  }
+  
+  .meeting-btn.active {
+    background: #ef4444;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  
+  .video-container {
+    background: #1f2937;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+    display: none;
+  }
+  
+  .video-container.active {
+    display: block;
+  }
+  
+  .video-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .video-player {
+    background: #000;
+    border-radius: 8px;
+    aspect-ratio: 16/9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .video-player video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .video-label {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.6);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+  }
+  
+  .call-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .call-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+  
+  .call-btn.mic { background: #3b82f6; color: white; }
+  .call-btn.video { background: #10b981; color: white; }
+  .call-btn.end { background: #ef4444; color: white; }
+  .call-btn:hover { transform: scale(1.05); }
+  
+  /* AI Assistant Panel */
+  .ai-assistant-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+    border: 1px solid var(--border);
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .ai-assistant-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .transcription-entry {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    border-left: 3px solid #667eea;
+  }
+  
+  .transcription-time {
+    font-size: 0.65rem;
+    color: #9ca3af;
+    margin-bottom: 0.25rem;
+  }
+  
+  .transcription-text {
+    font-size: 0.8rem;
+    color: #374151;
+    line-height: 1.4;
+  }
+  
+  .summary-box {
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  
+  .summary-box h4 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #374151;
+  }
+  
+  /* Calendar Styles */
+  .calendar-container {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+  
+  #calendar {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .fc-event {
+    cursor: pointer;
+  }
+  
+  /* Schedule Meeting Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modal.active {
+    display: flex;
+  }
+  
+  .modal-content {
+    background: white;
+    border-radius: 16px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #374151;
+  }
+  
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+  }
+  
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+  
+  .btn-primary {
+    background: var(--dut-blue);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  
+  /* Existing styles continue... */
+  .sos-banner {
+    background: white; border: 2px solid #fca5a5;
+    border-radius: 14px; overflow: hidden;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 16px rgba(239,68,68,0.12);
+    animation: sosGlow 2s ease-in-out infinite;
+  }
+  @keyframes sosGlow {
+    0%,100% { box-shadow: 0 4px 16px rgba(239,68,68,0.12); }
+    50%      { box-shadow: 0 4px 28px rgba(239,68,68,0.28); }
+  }
+  .sos-banner-head {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    padding: 10px 1.4rem;
+    display: flex; align-items: center; gap: 10px;
+    color: white;
+  }
+  .sos-banner-head h3 { font-size: 0.88rem; font-weight: 700; }
+  .sos-banner-head .sos-pulse {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: white; flex-shrink: 0;
+    animation: pulse-dot 1s infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+
+  .sos-tbl { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .sos-tbl thead th {
+    text-align: left; padding: 9px 14px;
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--text-muted);
+    background: #fff5f5; border-bottom: 1px solid #fecaca;
+  }
+  .sos-tbl tbody td { padding: 11px 14px; border-bottom: 1px solid #fff5f5; vertical-align: middle; }
+  .sos-tbl tbody tr:last-child td { border-bottom: none; }
+  .sos-tbl tbody tr { background: #fff9f9; transition: background 0.15s; }
+  .sos-tbl tbody tr:hover { background: #fff0f0; }
+  .sos-student-link { font-weight: 700; color: var(--dut-blue); text-decoration: none; font-size: 0.82rem; }
+  .sos-student-link:hover { text-decoration: underline; }
+  .sos-snum { font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
+  .time-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.68rem; color: var(--text-muted); white-space: nowrap;
+  }
+
+  .cd-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .cd-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .cd-row-32 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+
+  .cd-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.3rem 1.4rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .cd-card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem;
+  }
+  .cd-card-title {
+    font-size: 0.85rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .cd-card-title i { font-size: 0.78rem; color: var(--dut-blue); }
+  .cd-card-sub { font-size: 0.67rem; color: var(--text-muted); margin-top: 2px; }
+
+  .booking-row {
+    padding: 11px 0; border-bottom: 1px solid #f8fafc;
+  }
+  .booking-row:last-child { border-bottom: none; }
+  .booking-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 8px; margin-bottom: 8px;
+  }
+  .booking-student { font-size: 0.82rem; font-weight: 700; color: var(--dut-blue); text-decoration: none; }
+  .booking-student:hover { text-decoration: underline; }
+  .booking-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+  .booking-reason { font-size: 0.72rem; color: #666; margin-top: 3px; font-style: italic; }
+  .booking-actions { display: flex; gap: 6px; }
+
+  .btn-confirm {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 14px; background: #ecfdf5; color: #065f46;
+    border: 1.5px solid #6ee7b7; border-radius: 8px;
+    font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s; flex: 1; justify-content: center;
+  }
+  .btn-confirm:hover { background: #d1fae5; }
+  .btn-decline {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 14px; background: #fef2f2; color: #991b1b;
+    border: 1.5px solid #fca5a5; border-radius: 8px;
+    font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s; flex: 1; justify-content: center;
+  }
+  .btn-decline:hover { background: #fee2e2; }
+
+  .sess-type-pill {
+    font-size: 0.6rem; font-weight: 700; padding: 2px 8px;
+    border-radius: 100px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .st-individual { background: var(--dut-light); color: var(--dut-blue); }
+  .st-group      { background: #f5f3ff; color: #7c3aed; }
+  .st-online     { background: #f0fdf4; color: #059669; }
+
+  .mood-alert-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 0; border-bottom: 1px solid #f8fafc;
+  }
+  .mood-alert-row:last-child { border-bottom: none; }
+  .mood-ball-sm {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 800; color: white; flex-shrink: 0;
+  }
+  .mb-1,.mb-2,.mb-3 { background: linear-gradient(135deg,#ef4444,#dc2626); }
+  .mb-4,.mb-5       { background: linear-gradient(135deg,#f97316,#ea580c); }
+  .mb-6,.mb-7       { background: linear-gradient(135deg,#eab308,#ca8a04); }
+  .mb-8,.mb-9       { background: linear-gradient(135deg,#22c55e,#16a34a); }
+  .mb-10            { background: linear-gradient(135deg,#10b981,#059669); }
+  .mood-alert-info { flex: 1; min-width: 0; }
+  .mood-alert-name { font-size: 0.8rem; font-weight: 700; color: var(--dut-blue); text-decoration: none; }
+  .mood-alert-name:hover { text-decoration: underline; }
+  .mood-alert-time { font-size: 0.67rem; color: var(--text-muted); margin-top: 1px; }
+  .mood-alert-note { font-size: 0.68rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .ci-tbl { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+  .ci-tbl thead th {
+    text-align: left; padding: 8px 12px;
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--text-muted);
+    background: #f8fafc; border-bottom: 1px solid var(--border);
+  }
+  .ci-tbl tbody td { padding: 10px 12px; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+  .ci-tbl tbody tr:hover td { background: #fafbff; }
+  .ci-tbl tbody tr:last-child td { border-bottom: none; }
+  .ci-student-link { font-weight: 600; color: var(--dut-blue); text-decoration: none; font-size: 0.8rem; }
+  .ci-student-link:hover { text-decoration: underline; }
+  .ci-mood-mini {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.68rem; font-weight: 800; color: white;
+  }
+  .stress-badge {
+    font-size: 0.62rem; font-weight: 700; padding: 2px 8px;
+    border-radius: 100px; text-transform: uppercase;
+  }
+  .sb-low  { background: #ecfdf5; color: #065f46; }
+  .sb-mid  { background: #fffbeb; color: #b45309; }
+  .sb-high { background: #fef2f2; color: #991b1b; }
+  .mini-bar { height: 5px; background: #f1f5f9; border-radius: 3px; width: 55px; }
+  .mini-bar span { display: block; height: 100%; border-radius: 3px; }
+
+  .chart-160 { position: relative; height: 160px; }
+
+  .quick-action {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 10px;
+    background: #f8fafc; border: 1px solid var(--border);
+    text-decoration: none; color: var(--text);
+    transition: all 0.15s; margin-bottom: 6px; font-size: 0.8rem; font-weight: 600;
+    cursor: pointer;
+  }
+  .quick-action:last-child { margin-bottom: 0; }
+  .quick-action:hover { background: var(--dut-light); border-color: var(--dut-blue); color: var(--dut-blue); }
+  .qa-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
+  .qa-sub  { font-size: 0.65rem; color: var(--text-muted); font-weight: 400; margin-top: 1px; }
+
+  .activity-feed { display: flex; flex-direction: column; gap: 0; }
+  .activity-item {
+    display: flex; gap: 10px; padding: 9px 0;
+    border-bottom: 1px solid #f8fafc; align-items: flex-start;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+  }
+  .ad-blue   { background: var(--dut-blue); }
+  .ad-red    { background: #ef4444; }
+  .ad-green  { background: #10b981; }
+  .ad-amber  { background: #f59e0b; }
+  .activity-text { font-size: 0.77rem; color: var(--text); line-height: 1.4; }
+  .activity-time { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+  .cd-empty { text-align: center; padding: 2rem 1rem; color: var(--text-muted); }
+  .cd-empty i { font-size: 1.6rem; display: block; margin-bottom: 8px; opacity: 0.35; }
+  .cd-empty p { font-size: 0.78rem; }
+
+  @media (max-width: 1100px) { .cd-kpi-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 1024px) { .cd-row-32 { grid-template-columns: 1fr; } .cd-row-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 900px)  { .cd-row-2,.cd-row-3 { grid-template-columns: 1fr; } }
+  @media (max-width: 600px)  { .cd-kpi-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <h1>Welcome, {{ current_user.full_name.split()[0] }} 👩‍⚕️</h1>
-  <p>Student wellness overview and session management</p>
-</div>
 
-<!-- STATS -->
-<div class="stats-grid">
-  <div class="stat-card">
-    <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
-    <div><div class="stat-value">{{ students|length }}</div><div class="stat-label">Total Students</div></div>
+<!-- Page Header -->
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.8rem;margin-bottom:1.4rem;">
+  <div>
+    <h1>Welcome back, {{ current_user.full_name.split()[0] }} 👩‍⚕️</h1>
+    <p>Student wellness overview · Video sessions · Crisis monitoring</p>
   </div>
-  <div class="stat-card">
-    <div class="stat-icon gold"><i class="fa-solid fa-calendar-check"></i></div>
-    <div><div class="stat-value">{{ pending_bookings|length }}</div><div class="stat-label">Pending Sessions</div></div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
-    <div><div class="stat-value">{{ active_sos|length }}</div><div class="stat-label">Active SOS Alerts</div></div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon green"><i class="fa-solid fa-face-frown"></i></div>
-    <div><div class="stat-value">{{ low_mood|length }}</div><div class="stat-label">Low Mood Reports</div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a href="{{ url_for('video_sessions') }}" class="btn btn-primary" style="background: #8b5cf6;">
+      <i class="fa-solid fa-video"></i> Video Sessions
+    </a>
+    <a href="{{ url_for('forum') }}" class="btn btn-ghost"><i class="fa-solid fa-comments"></i> Forum</a>
+    <a href="{{ url_for('resources') }}" class="btn btn-ghost"><i class="fa-solid fa-book-open"></i> Resources</a>
   </div>
 </div>
 
-<!-- ACTIVE SOS ALERTS -->
+<!-- Video Meeting Section -->
+<div class="meeting-controls">
+  <div class="meeting-header">
+    <div class="meeting-title">
+      <i class="fa-solid fa-video"></i>
+      Wellness Video Sessions
+    </div>
+    <div class="meeting-buttons">
+      <a href="{{ url_for('video_sessions') }}" class="meeting-btn">
+        <i class="fa-solid fa-video"></i> Manage Sessions
+      </a>
+      <button id="startCallBtn" class="meeting-btn" onclick="startCall()">
+        <i class="fa-solid fa-phone"></i> Quick Call
+      </button>
+    </div>
+  </div>
+  
+  <!-- Video Container -->
+  <div id="videoContainer" class="video-container">
+    <div class="video-grid">
+      <div class="video-player" id="localVideo">
+        <video id="localVideoElement" autoplay muted playsinline></video>
+        <span class="video-label">You (Counsellor)</span>
+      </div>
+      <div class="video-player" id="remoteVideo">
+        <video id="remoteVideoElement" autoplay playsinline></video>
+        <span class="video-label">Student</span>
+        <div id="waitingMessage" style="position: absolute; color: white; text-align: center;">
+          Waiting for student to join...
+        </div>
+      </div>
+    </div>
+    <div class="call-controls">
+      <button class="call-btn mic" onclick="toggleMic()">
+        <i class="fa-solid fa-microphone"></i>
+      </button>
+      <button class="call-btn video" onclick="toggleCamera()">
+        <i class="fa-solid fa-video"></i>
+      </button>
+      <button class="call-btn end" onclick="endCall()">
+        <i class="fa-solid fa-phone-slash"></i>
+      </button>
+    </div>
+  </div>
+  
+  <!-- AI Assistant Panel -->
+  <div id="aiAssistantPanel" class="ai-assistant-panel" style="display: none;">
+    <div class="ai-assistant-header">
+      <i class="fa-solid fa-microphone-alt" style="color: #667eea;"></i>
+      <strong>AI Voice Assistant</strong>
+      <span style="font-size: 0.7rem; color: #9ca3af;">(Automatically activated during calls)</span>
+    </div>
+    <div id="transcriptionList">
+      <div class="transcription-entry">
+        <div class="transcription-time">System</div>
+        <div class="transcription-text">AI assistant is ready. It will transcribe and summarize the session automatically.</div>
+      </div>
+    </div>
+    <div id="summaryBox" class="summary-box" style="display: none;">
+      <h4><i class="fa-regular fa-file-lines"></i> Session Summary</h4>
+      <div id="summaryContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── KPI CARDS ─── -->
+<div class="cd-kpi-grid">
+  <div class="cd-kpi k-blue">
+    <div class="cd-kpi-top">
+      <div class="cd-kpi-icon ki-blue"><i class="fa-solid fa-users"></i></div>
+      <span class="cd-kpi-badge kb-neu">Registered</span>
+    </div>
+    <div class="cd-kpi-val">{{ students|length }}</div>
+    <div class="cd-kpi-lbl">Total Students</div>
+    <div class="cd-kpi-bar"><span style="width:{{ [students|length*2,100]|min }}%;background:var(--dut-blue);"></span></div>
+  </div>
+  <div class="cd-kpi k-amber">
+    <div class="cd-kpi-top">
+      <div class="cd-kpi-icon ki-amber"><i class="fa-solid fa-calendar-check"></i></div>
+      <span class="cd-kpi-badge {% if pending_bookings|length > 0 %}kb-amber{% else %}kb-neu{% endif %}">
+        {% if pending_bookings|length > 0 %}Needs action{% else %}Clear{% endif %}
+      </span>
+    </div>
+    <div class="cd-kpi-val">{{ pending_bookings|length }}</div>
+    <div class="cd-kpi-lbl">Pending Sessions</div>
+    <div class="cd-kpi-bar"><span style="width:{{ [pending_bookings|length*10,100]|min }}%;background:#f59e0b;"></span></div>
+  </div>
+  <div class="cd-kpi k-red">
+    <div class="cd-kpi-top">
+      <div class="cd-kpi-icon ki-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <span class="cd-kpi-badge {% if active_sos|length > 0 %}kb-red{% else %}kb-green{% endif %}">
+        {% if active_sos|length > 0 %}Urgent{% else %}All clear{% endif %}
+      </span>
+    </div>
+    <div class="cd-kpi-val">{{ active_sos|length }}</div>
+    <div class="cd-kpi-lbl">Active SOS Alerts</div>
+    <div class="cd-kpi-bar"><span style="width:{{ [active_sos|length*20,100]|min }}%;background:#ef4444;"></span></div>
+  </div>
+  <div class="cd-kpi k-purple">
+    <div class="cd-kpi-top">
+      <div class="cd-kpi-icon ki-purple"><i class="fa-solid fa-calendar-week"></i></div>
+      <span class="cd-kpi-badge kb-neu">Upcoming</span>
+    </div>
+    <div class="cd-kpi-val" id="upcomingMeetingsCount">0</div>
+    <div class="cd-kpi-lbl">Scheduled Meetings</div>
+    <div class="cd-kpi-bar"><span style="width:0%;background:#8b5cf6;" id="meetingsProgress"></span></div>
+  </div>
+</div>
+
+<!-- Schedule Meeting Modal -->
+<div id="scheduleModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Schedule a Meeting</h3>
+      <button onclick="closeScheduleModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+    <form id="scheduleForm" onsubmit="scheduleMeeting(event)">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Student *</label>
+          <select id="studentSelect" class="form-select" required>
+            <option value="">Select student</option>
+            {% for student in students %}
+            <option value="{{ student.id }}">{{ student.full_name }} ({{ student.student_number }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Meeting Title *</label>
+          <input type="text" id="meetingTitle" class="form-input" placeholder="e.g., Weekly Check-in" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date & Time *</label>
+          <input type="datetime-local" id="meetingDateTime" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration (minutes)</label>
+          <select id="meetingDuration" class="form-select">
+            <option value="30">30 minutes</option>
+            <option value="45" selected>45 minutes</option>
+            <option value="60">60 minutes</option>
+            <option value="90">90 minutes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Meeting Type</label>
+          <select id="meetingType" class="form-select">
+            <option value="video">Video Call</option>
+            <option value="audio">Audio Call</option>
+            <option value="in-person">In-Person</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Agenda / Notes</label>
+          <textarea id="meetingAgenda" rows="3" class="form-textarea" placeholder="What will be discussed?"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="closeScheduleModal()" class="btn-secondary">Cancel</button>
+        <button type="submit" class="btn-primary">Schedule Meeting</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ─── ACTIVE SOS ALERTS ─── -->
 {% if active_sos %}
-<div class="card mb-3" style="border:2px solid #e74c3c;">
-  <div class="card-title" style="color:#c0392b;"><i class="fa-solid fa-triangle-exclamation"></i> 🚨 Active SOS Alerts ({{ active_sos|length }})</div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Student</th><th>Message</th><th>Location</th><th>Time</th><th>Action</th></tr></thead>
+<div class="sos-banner">
+  <div class="sos-banner-head">
+    <div class="sos-pulse"></div>
+    <h3>🚨 Active SOS Alerts — {{ active_sos|length }} student{{ 's' if active_sos|length != 1 }} need immediate help</h3>
+    <span style="margin-left:auto;font-size:0.68rem;opacity:0.8;">Respond immediately</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="sos-tbl">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Emergency Message</th>
+          <th>Location</th>
+          <th>Time</th>
+          <th>Actions</th>
+         </tr>
+      </thead>
       <tbody>
         {% for sos in active_sos %}
-        <tr style="background:#fff5f5;">
+        <tr>
           <td>
-            <a href="{{ url_for('view_student', student_id=sos.user_id) }}" style="font-weight:600;color:var(--dut-blue);text-decoration:none;">
-              {{ sos.user.full_name }}<br>
-              <span style="font-size:0.75rem;color:var(--text-muted);">{{ sos.user.student_number }}</span>
-            </a>
+            <a href="{{ url_for('view_student', student_id=sos.user_id) }}" class="sos-student-link">{{ sos.user.full_name }}</a>
+            <div class="sos-snum">{{ sos.user.student_number }}{% if sos.user.phone %} · {{ sos.user.phone }}{% endif %}</div>
           </td>
-          <td style="font-size:0.85rem;">{{ sos.message or 'Emergency assistance needed' }}</td>
-          <td style="font-size:0.82rem;">{{ sos.location or '—' }}</td>
-          <td style="font-size:0.78rem;white-space:nowrap;">{{ sos.created_at.strftime('%d %b %H:%M') }}</td>
+          <td style="max-width:220px;font-size:0.8rem;">{{ sos.message or 'Emergency assistance needed' }}</td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">
+            {% if sos.location %}<i class="fa-solid fa-location-dot" style="color:#ef4444;font-size:0.7rem;"></i> {{ sos.location }}{% else %}—{% endif %}
+          </td>
           <td>
-            <form method="POST" action="{{ url_for('respond_sos', sos_id=sos.id) }}" style="display:inline;">
-              <button type="submit" class="btn btn-danger btn-sm">Respond</button>
-            </form>
-            <a href="tel:{{ sos.user.phone or '' }}" class="btn btn-ghost btn-sm">📞 Call</a>
+            <div class="time-chip"><i class="fa-regular fa-clock" style="font-size:0.65rem;"></i> {{ sos.created_at.strftime('%d %b %H:%M') }}</div>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <form method="POST" action="{{ url_for('respond_sos', sos_id=sos.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm" style="font-size:0.72rem;padding:5px 12px;">
+                  <i class="fa-solid fa-reply"></i> Respond
+                </button>
+              </form>
+              {% if sos.user.phone %}
+              <a href="tel:{{ sos.user.phone }}" class="btn btn-ghost btn-sm" style="font-size:0.72rem;padding:5px 12px;">
+                <i class="fa-solid fa-phone"></i> Call
+              </a>
+              {% endif %}
+              <a href="{{ url_for('view_student', student_id=sos.user_id) }}" class="btn btn-ghost btn-sm" style="font-size:0.72rem;padding:5px 12px;">
+                <i class="fa-solid fa-user"></i> Profile
+              </a>
+            </div>
           </td>
         </tr>
         {% endfor %}
@@ -62,77 +782,653 @@
 </div>
 {% endif %}
 
-<div class="grid-2">
-  <!-- PENDING BOOKINGS -->
-  <div class="card">
-    <div class="card-title"><i class="fa-solid fa-calendar-check"></i> Pending Booking Requests</div>
+<!-- ─── ROW 1: Upcoming Meetings + Pending Bookings ─── -->
+<div class="cd-row-2">
+  <!-- Upcoming Meetings Calendar -->
+  <div class="cd-card">
+    <div class="cd-card-head">
+      <div>
+        <div class="cd-card-title"><i class="fa-solid fa-calendar-alt"></i> Upcoming Meetings</div>
+        <div class="cd-card-sub">Scheduled video & in-person sessions</div>
+      </div>
+      <a href="{{ url_for('video_sessions') }}" class="btn btn-primary btn-sm" style="background: #8b5cf6; padding: 4px 12px;">
+        <i class="fa-solid fa-calendar-plus"></i> Manage
+      </a>
+    </div>
+    <div id="upcomingMeetingsList">
+      <div class="cd-empty"><i class="fa-solid fa-calendar"></i><p>No upcoming meetings scheduled</p></div>
+    </div>
+  </div>
+
+  <!-- Pending Bookings -->
+  <div class="cd-card">
+    <div class="cd-card-head">
+      <div>
+        <div class="cd-card-title"><i class="fa-solid fa-calendar-check"></i> Pending Booking Requests</div>
+        <div class="cd-card-sub">Awaiting your confirmation</div>
+      </div>
+      {% if pending_bookings %}
+      <span style="font-size:0.68rem;font-weight:700;padding:3px 10px;background:#fffbeb;color:#b45309;border-radius:100px;">{{ pending_bookings|length }} pending</span>
+      {% endif %}
+    </div>
     {% if pending_bookings %}
     {% for b in pending_bookings %}
-    <div style="padding:12px 0;border-bottom:1px solid var(--border);">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
-        <div>
-          <a href="{{ url_for('view_student', student_id=b.student_id) }}" style="font-weight:600;font-size:0.9rem;color:var(--dut-blue);text-decoration:none;">{{ b.student.full_name }}</a>
-          <div style="font-size:0.78rem;color:var(--text-muted);">{{ b.session_type|title }} · {% if b.preferred_date %}{{ b.preferred_date.strftime('%d %b %Y %H:%M') }}{% else %}Date TBD{% endif %}</div>
-          {% if b.reason %}<div style="font-size:0.78rem;color:#666;margin-top:2px;">{{ b.reason[:80] }}...</div>{% endif %}
+    <div class="booking-row">
+      <div class="booking-top">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <a href="{{ url_for('view_student', student_id=b.student_id) }}" class="booking-student">{{ b.student.full_name }}</a>
+            <span class="sess-type-pill st-{{ b.session_type }}">{{ b.session_type }}</span>
+          </div>
+          <div class="booking-meta">
+            <i class="fa-regular fa-calendar" style="font-size:0.65rem;"></i>
+            {% if b.preferred_date %}{{ b.preferred_date.strftime('%d %b %Y · %I:%M %p') }}{% else %}Date TBD{% endif %}
+          </div>
+          {% if b.reason %}
+          <div class="booking-reason">{{ b.reason[:90] }}{% if b.reason|length > 90 %}...{% endif %}</div>
+          {% endif %}
         </div>
-        <span class="badge badge-pending">Pending</span>
       </div>
-      <div style="display:flex;gap:8px;margin-top:10px;">
+      <div class="booking-actions">
         <form method="POST" action="{{ url_for('update_booking', booking_id=b.id) }}" style="flex:1;">
           <input type="hidden" name="status" value="confirmed">
-          <button type="submit" class="btn btn-success btn-sm btn-block"><i class="fa-solid fa-check"></i> Confirm</button>
+          <button type="submit" class="btn-confirm"><i class="fa-solid fa-check"></i> Confirm</button>
         </form>
         <form method="POST" action="{{ url_for('update_booking', booking_id=b.id) }}" style="flex:1;">
           <input type="hidden" name="status" value="cancelled">
-          <button type="submit" class="btn btn-danger btn-sm btn-block"><i class="fa-solid fa-xmark"></i> Decline</button>
+          <button type="submit" class="btn-decline"><i class="fa-solid fa-xmark"></i> Decline</button>
         </form>
       </div>
     </div>
     {% endfor %}
     {% else %}
-    <div class="empty-state"><i class="fa-solid fa-calendar"></i><p>No pending bookings</p></div>
+    <div class="cd-empty"><i class="fa-solid fa-calendar-check"></i><p>No pending bookings</p></div>
     {% endif %}
-  </div>
-
-  <!-- LOW MOOD ALERTS -->
-  <div class="card">
-    <div class="card-title" style="color:#e67e22;"><i class="fa-solid fa-face-sad-tear"></i> Low Mood Reports</div>
-    {% if low_mood %}
-    {% for c in low_mood %}
-    <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
-      <div class="mood-dot mood-{{ c.mood_score }}">{{ c.mood_score }}</div>
-      <div style="flex:1;">
-        <a href="{{ url_for('view_student', student_id=c.user_id) }}" style="font-size:0.85rem;font-weight:600;color:var(--dut-blue);text-decoration:none;">{{ c.user.full_name }}</a>
-        <div style="font-size:0.75rem;color:var(--text-muted);">{{ c.timestamp.strftime('%d %b %Y %H:%M') }}</div>
-        {% if c.notes %}<div style="font-size:0.75rem;color:#666;">{{ c.notes[:60] }}...</div>{% endif %}
-      </div>
-    </div>
-    {% endfor %}
-    {% else %}
-    <div class="empty-state"><i class="fa-solid fa-face-smile"></i><p>No low mood reports</p></div>
-    {% endif %}
-  </div>
-
-  <!-- RECENT CHECK-INS -->
-  <div class="card col-span-2">
-    <div class="card-title"><i class="fa-solid fa-heart-pulse"></i> Recent Student Check-ins</div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Student</th><th>Mood</th><th>Stress</th><th>Sleep</th><th>Date</th><th>Action</th></tr></thead>
-        <tbody>
-          {% for c in recent_checkins %}
-          <tr>
-            <td><a href="{{ url_for('view_student', student_id=c.user_id) }}" style="color:var(--dut-blue);text-decoration:none;font-weight:500;font-size:0.85rem;">{{ c.user.full_name }}</a></td>
-            <td><div class="mood-dot mood-{{ c.mood_score }}" style="width:28px;height:28px;font-size:0.75rem;">{{ c.mood_score }}</div></td>
-            <td>{% if c.stress_level %}<span class="badge badge-{{ 'cancelled' if c.stress_level>=7 else 'pending' if c.stress_level>=5 else 'confirmed' }}">{{ c.stress_level }}</span>{% else %}—{% endif %}</td>
-            <td style="font-size:0.85rem;">{{ c.sleep_hours|string + 'h' if c.sleep_hours else '—' }}</td>
-            <td style="font-size:0.78rem;color:var(--text-muted);">{{ c.timestamp.strftime('%d %b %H:%M') }}</td>
-            <td><a href="{{ url_for('view_student', student_id=c.user_id) }}" class="btn btn-ghost btn-sm">View</a></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
   </div>
 </div>
+
+<!-- ─── ROW 2: Recent Check-ins ─── -->
+<div class="cd-card" style="margin-bottom:1rem;">
+  <div class="cd-card-head">
+    <div>
+      <div class="cd-card-title"><i class="fa-solid fa-heart-pulse"></i> Recent Student Check-ins</div>
+      <div class="cd-card-sub">Latest wellness logs across all students</div>
+    </div>
+    <span style="font-size:0.68rem;color:var(--text-muted);">{{ recent_checkins|length }} records shown</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="ci-tbl">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Mood</th>
+          <th>Score Bar</th>
+          <th>Stress</th>
+          <th>Sleep</th>
+          <th>Activity</th>
+          <th>Date</th>
+          <th>Action</th>
+         </tr>
+      </thead>
+      <tbody>
+        {% for c in recent_checkins %}
+        <tr>
+          <td>
+            <a href="{{ url_for('view_student', student_id=c.user_id) }}" class="ci-student-link">{{ c.user.full_name }}</a>
+            <div style="font-size:0.65rem;color:var(--text-muted);">{{ c.user.student_number }}</div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:7px;">
+              <div class="ci-mood-mini mb-{{ c.mood_score }}">{{ c.mood_score }}</div>
+              <span style="font-size:0.7rem;color:var(--text-muted);">
+                {% if c.mood_score>=8 %}Great{% elif c.mood_score>=6 %}Good{% elif c.mood_score>=4 %}Neutral{% else %}Low{% endif %}
+              </span>
+            </div>
+          </td>
+          <td>
+            <div class="mini-bar">
+              <span style="width:{{ c.mood_score*10 }}%;background:{% if c.mood_score>=8 %}#10b981{% elif c.mood_score>=6 %}var(--dut-blue){% elif c.mood_score>=4 %}#f59e0b{% else %}#ef4444{% endif %};"></span>
+            </div>
+          </td>
+          <td>
+            {% if c.stress_level %}
+            <span class="stress-badge {% if c.stress_level>=7 %}sb-high{% elif c.stress_level>=5 %}sb-mid{% else %}sb-low{% endif %}">
+              {{ c.stress_level }}/10
+            </span>
+            {% else %}<span style="color:var(--text-muted);font-size:0.78rem;">—</span>{% endif %}
+          </td>
+          <td style="font-size:0.78rem;color:var(--text-muted);">{% if c.sleep_hours %}{{ c.sleep_hours }}h{% else %}—{% endif %}</td>
+          <td style="font-size:0.74rem;color:var(--text-muted);">{{ c.physical_activity or '—' }}</td>
+          <td>
+            <div style="font-size:0.74rem;font-weight:600;color:var(--text);">{{ c.timestamp.strftime('%d %b') }}</div>
+            <div style="font-size:0.64rem;color:var(--text-muted);">{{ c.timestamp.strftime('%H:%M') }}</div>
+          </td>
+          <td>
+            <a href="{{ url_for('view_student', student_id=c.user_id) }}" class="btn btn-ghost btn-sm" style="font-size:0.7rem;padding:4px 10px;">
+              View Profile
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ─── ROW 3: Activity Feed + Quick Actions + Mood Chart ─── -->
+<div class="cd-row-3">
+
+  <!-- Activity Feed -->
+  <div class="cd-card">
+    <div class="cd-card-head">
+      <div class="cd-card-title"><i class="fa-solid fa-bolt"></i> Recent Activity</div>
+    </div>
+    <div class="activity-feed">
+      {% if active_sos %}
+      {% for sos in active_sos[:3] %}
+      <div class="activity-item">
+        <div class="activity-dot ad-red"></div>
+        <div>
+          <div class="activity-text"><strong>{{ sos.user.full_name }}</strong> sent an SOS alert</div>
+          <div class="activity-time">{{ sos.created_at.strftime('%d %b · %H:%M') }}</div>
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% if pending_bookings %}
+      {% for b in pending_bookings[:3] %}
+      <div class="activity-item">
+        <div class="activity-dot ad-amber"></div>
+        <div>
+          <div class="activity-text"><strong>{{ b.student.full_name }}</strong> requested a {{ b.session_type }} session</div>
+          <div class="activity-time">{{ b.created_at.strftime('%d %b · %H:%M') }}</div>
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% if low_mood %}
+      {% for c in low_mood[:3] %}
+      <div class="activity-item">
+        <div class="activity-dot ad-blue"></div>
+        <div>
+          <div class="activity-text"><strong>{{ c.user.full_name }}</strong> reported low mood ({{ c.mood_score }}/10)</div>
+          <div class="activity-time">{{ c.timestamp.strftime('%d %b · %H:%M') }}</div>
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% if not active_sos and not pending_bookings and not low_mood %}
+      <div class="cd-empty" style="padding:1.5rem 0;"><i class="fa-solid fa-bolt"></i><p>No recent activity</p></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="cd-card">
+    <div class="cd-card-head">
+      <div class="cd-card-title"><i class="fa-solid fa-grid-2"></i> Quick Actions</div>
+    </div>
+    <a href="{{ url_for('video_sessions') }}" class="quick-action">
+      <div class="qa-icon" style="background:#f5f3ff;color:#8b5cf6;"><i class="fa-solid fa-video"></i></div>
+      <div>
+        <div>Video Sessions</div>
+        <div class="qa-sub">Manage calls & meetings</div>
+      </div>
+      <i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:0.65rem;color:var(--text-muted);"></i>
+    </a>
+    <button onclick="startCall()" class="quick-action">
+      <div class="qa-icon" style="background:#dcfce7;color:#10b981;"><i class="fa-solid fa-phone"></i></div>
+      <div>
+        <div>Quick Call</div>
+        <div class="qa-sub">Start instant session</div>
+      </div>
+      <i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:0.65rem;color:var(--text-muted);"></i>
+    </button>
+    <a href="{{ url_for('crisis') }}" class="quick-action">
+      <div class="qa-icon" style="background:#fef2f2;color:#dc2626;"><i class="fa-solid fa-phone-volume"></i></div>
+      <div>
+        <div>Crisis Lines</div>
+        <div class="qa-sub">View all emergency numbers</div>
+      </div>
+      <i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:0.65rem;color:var(--text-muted);"></i>
+    </a>
+    <a href="{{ url_for('forum') }}" class="quick-action">
+      <div class="qa-icon" style="background:var(--dut-light);color:var(--dut-blue);"><i class="fa-solid fa-comments"></i></div>
+      <div>
+        <div>Peer Forum</div>
+        <div class="qa-sub">Moderate student discussions</div>
+      </div>
+      <i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:0.65rem;color:var(--text-muted);"></i>
+    </a>
+  </div>
+
+  <!-- Mood Distribution mini chart -->
+  <div class="cd-card">
+    <div class="cd-card-head">
+      <div>
+        <div class="cd-card-title"><i class="fa-solid fa-chart-bar"></i> Mood Overview</div>
+        <div class="cd-card-sub">Recent check-ins distribution</div>
+      </div>
+    </div>
+    {% if recent_checkins %}
+    <div class="chart-160"><canvas id="moodBarChart"></canvas></div>
+    {% else %}
+    <div class="cd-empty"><i class="fa-solid fa-chart-bar"></i><p>No data yet</p></div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Video Call Variables
+  let localStream = null;
+  let peerConnection = null;
+  let isCallActive = false;
+  let recognition = null;
+  let isListening = false;
+  let transcriptionHistory = [];
+  let sessionSummary = [];
+  let scheduledMeetings = [];
+
+  // Load meetings from backend
+  async function loadMeetings() {
+    try {
+      const response = await fetch('/api/counsellor/meetings');
+      const meetings = await response.json();
+      scheduledMeetings = meetings.map(m => ({
+        id: m.id,
+        studentId: m.student_id,
+        studentName: m.student_name,
+        title: m.title,
+        dateTime: new Date(m.meeting_date),
+        duration: m.duration,
+        type: m.type,
+        agenda: m.agenda,
+        meetingLink: m.meeting_link
+      }));
+      updateUpcomingMeetingsDisplay();
+    } catch (error) {
+      console.error('Error loading meetings:', error);
+    }
+  }
+
+  // ========== VIDEO CALL FUNCTIONS ==========
+  async function startCall() {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const localVideo = document.getElementById('localVideoElement');
+      if (localVideo) localVideo.srcObject = localStream;
+      
+      document.getElementById('videoContainer').classList.add('active');
+      document.getElementById('startCallBtn').style.display = 'none';
+      document.getElementById('aiAssistantPanel').style.display = 'block';
+      
+      isCallActive = true;
+      startAIAssistant();
+      showToast('Call started. AI assistant is now active and will transcribe the session.', 'success');
+    } catch (error) {
+      console.error('Error accessing media devices:', error);
+      alert('Unable to access camera/microphone. Please check permissions.');
+    }
+  }
+  
+  function endCall() {
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+      localStream = null;
+    }
+    if (peerConnection) {
+      peerConnection.close();
+      peerConnection = null;
+    }
+    
+    document.getElementById('videoContainer').classList.remove('active');
+    document.getElementById('startCallBtn').style.display = 'inline-flex';
+    
+    isCallActive = false;
+    stopAIAssistant();
+    generateSessionSummary();
+    showToast('Call ended. Session summary has been generated.', 'info');
+  }
+  
+  function toggleMic() {
+    if (localStream) {
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        const micBtn = document.querySelector('.call-btn.mic i');
+        if (audioTrack.enabled) {
+          micBtn.className = 'fa-solid fa-microphone';
+        } else {
+          micBtn.className = 'fa-solid fa-microphone-slash';
+        }
+      }
+    }
+  }
+  
+  function toggleCamera() {
+    if (localStream) {
+      const videoTrack = localStream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        const videoBtn = document.querySelector('.call-btn.video i');
+        if (videoTrack.enabled) {
+          videoBtn.className = 'fa-solid fa-video';
+        } else {
+          videoBtn.className = 'fa-solid fa-video-slash';
+        }
+      }
+    }
+  }
+  
+  // ========== AI VOICE ASSISTANT ==========
+  function startAIAssistant() {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+      
+      recognition.onstart = function() {
+        isListening = true;
+        addTranscriptionEntry('System', 'AI voice assistant activated - listening to session...');
+      };
+      
+      recognition.onresult = function(event) {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (finalTranscript) {
+          const timestamp = new Date().toLocaleTimeString();
+          addTranscriptionEntry('Session', finalTranscript);
+          analyzeTranscript(finalTranscript);
+        }
+      };
+      
+      recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+      };
+      
+      recognition.start();
+    } else {
+      addTranscriptionEntry('System', 'Speech recognition not supported in this browser. Please use Chrome or Edge for AI features.');
+    }
+  }
+  
+  function stopAIAssistant() {
+    if (recognition) {
+      recognition.stop();
+      isListening = false;
+      addTranscriptionEntry('System', 'AI voice assistant deactivated.');
+    }
+  }
+  
+  function addTranscriptionEntry(speaker, text) {
+    const timestamp = new Date().toLocaleTimeString();
+    transcriptionHistory.push({ speaker, text, timestamp });
+    
+    const transcriptionList = document.getElementById('transcriptionList');
+    const entry = document.createElement('div');
+    entry.className = 'transcription-entry';
+    entry.innerHTML = `
+      <div class="transcription-time">${timestamp} - ${speaker}</div>
+      <div class="transcription-text">${escapeHtml(text)}</div>
+    `;
+    transcriptionList.appendChild(entry);
+    entry.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    
+    sessionSummary.push(text);
+  }
+  
+  function analyzeTranscript(text) {
+    const lowerText = text.toLowerCase();
+    
+    if (lowerText.includes('stress') || lowerText.includes('anxious') || lowerText.includes('overwhelmed')) {
+      addTranscriptionEntry('AI Analysis', '⚠️ Detected stress/anxiety discussion - consider suggesting coping strategies');
+    }
+    if (lowerText.includes('sleep') || lowerText.includes('tired') || lowerText.includes('insomnia')) {
+      addTranscriptionEntry('AI Analysis', '💤 Sleep concerns mentioned - review sleep hygiene practices');
+    }
+    if (lowerText.includes('exam') || lowerText.includes('study') || lowerText.includes('assignment')) {
+      addTranscriptionEntry('AI Analysis', '📚 Academic stress detected - discuss time management strategies');
+    }
+    if (lowerText.includes('suicide') || lowerText.includes('self-harm') || lowerText.includes('hurt myself')) {
+      addTranscriptionEntry('AI Analysis', '🚨 CRITICAL ALERT - Crisis intervention needed immediately!');
+    }
+  }
+  
+  function generateSessionSummary() {
+    if (sessionSummary.length === 0) return;
+    
+    const summaryBox = document.getElementById('summaryBox');
+    const summaryContent = document.getElementById('summaryContent');
+    const allText = sessionSummary.join(' ').toLowerCase();
+    
+    let keyPoints = [];
+    
+    if (allText.includes('stress')) keyPoints.push('Stress and anxiety discussed');
+    if (allText.includes('sleep')) keyPoints.push('Sleep quality/quantity concerns');
+    if (allText.includes('academic') || allText.includes('exam')) keyPoints.push('Academic pressure mentioned');
+    if (allText.includes('relationship')) keyPoints.push('Personal relationships discussed');
+    
+    summaryContent.innerHTML = `
+      <div style="margin-bottom: 1rem;">
+        <strong>Session Duration:</strong> ${Math.floor(sessionSummary.length / 2)} minutes (estimated)
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <strong>Key Discussion Points:</strong>
+        <ul style="margin: 0.5rem 0 0 1rem;">
+          ${keyPoints.map(point => `<li>${point}</li>`).join('')}
+          ${keyPoints.length === 0 ? '<li>General wellness check-in conducted</li>' : ''}
+        </ul>
+      </div>
+      <div>
+        <strong>Recommended Follow-up:</strong>
+        <ul style="margin: 0.5rem 0 0 1rem;">
+          <li>Schedule follow-up session if needed</li>
+          <li>Provide relevant wellness resources</li>
+          <li>Document key concerns in student record</li>
+        </ul>
+      </div>
+    `;
+    
+    summaryBox.style.display = 'block';
+  }
+  
+  // ========== MEETING SCHEDULING ==========
+  function openScheduleModal() {
+    document.getElementById('scheduleModal').classList.add('active');
+    const now = new Date();
+    now.setHours(now.getHours() + 1);
+    now.setMinutes(0);
+    document.getElementById('meetingDateTime').value = now.toISOString().slice(0, 16);
+  }
+  
+  function closeScheduleModal() {
+    document.getElementById('scheduleModal').classList.remove('active');
+  }
+  
+  async function scheduleMeeting(event) {
+    event.preventDefault();
+    
+    const studentId = document.getElementById('studentSelect').value;
+    const title = document.getElementById('meetingTitle').value;
+    const dateTime = document.getElementById('meetingDateTime').value;
+    const duration = parseInt(document.getElementById('meetingDuration').value);
+    const meetingType = document.getElementById('meetingType').value;
+    const agenda = document.getElementById('meetingAgenda').value;
+    
+    if (!studentId || !title || !dateTime) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
+    
+    const meetingData = {
+      studentId: parseInt(studentId),
+      title: title,
+      dateTime: dateTime,
+      duration: duration,
+      type: meetingType,
+      agenda: agenda
+    };
+    
+    try {
+      const response = await fetch('/api/schedule-meeting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(meetingData)
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        showToast(`Meeting scheduled successfully!`, 'success');
+        closeScheduleModal();
+        document.getElementById('scheduleForm').reset();
+        loadMeetings();
+      } else {
+        showToast('Error scheduling meeting', 'error');
+      }
+    } catch (error) {
+      console.error('Error scheduling meeting:', error);
+      showToast('Error scheduling meeting', 'error');
+    }
+  }
+  
+  function updateUpcomingMeetingsDisplay() {
+    const container = document.getElementById('upcomingMeetingsList');
+    const now = new Date();
+    const upcoming = scheduledMeetings.filter(m => new Date(m.dateTime) > now).sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+    
+    document.getElementById('upcomingMeetingsCount').textContent = upcoming.length;
+    const progress = Math.min(upcoming.length * 10, 100);
+    document.getElementById('meetingsProgress').style.width = `${progress}%`;
+    
+    if (upcoming.length === 0) {
+      container.innerHTML = '<div class="cd-empty"><i class="fa-solid fa-calendar"></i><p>No upcoming meetings scheduled</p></div>';
+      return;
+    }
+    
+    container.innerHTML = upcoming.map(meeting => `
+      <div class="booking-row">
+        <div class="booking-top">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span style="font-weight: 700;">${escapeHtml(meeting.title)}</span>
+              <span class="sess-type-pill st-${meeting.type}">${meeting.type === 'video' ? '🎥 Video' : meeting.type === 'audio' ? '📞 Audio' : '👥 In-Person'}</span>
+            </div>
+            <div class="booking-meta">
+              <i class="fa-regular fa-user"></i> ${escapeHtml(meeting.studentName)}
+            </div>
+            <div class="booking-meta">
+              <i class="fa-regular fa-calendar"></i> ${formatDateTime(new Date(meeting.dateTime))} (${meeting.duration} min)
+            </div>
+            ${meeting.agenda ? `<div class="booking-reason">📋 ${escapeHtml(meeting.agenda.substring(0, 100))}</div>` : ''}
+          </div>
+          <a href="{{ url_for('video_sessions') }}" class="btn-confirm" style="padding: 6px 12px; text-decoration: none;">
+            <i class="fa-solid fa-video"></i> Join
+          </a>
+        </div>
+      </div>
+    `).join('');
+  }
+  
+  // ========== UTILITY FUNCTIONS ==========
+  function formatDateTime(date) {
+    return date.toLocaleString('en-ZA', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+  
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  
+  function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+    `;
+    toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.animation = 'slideIn 0.3s ease reverse';
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  }
+  
+  // Request notification permission
+  if ('Notification' in window && Notification.permission !== 'denied') {
+    Notification.requestPermission();
+  }
+  
+  // Load meetings on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    loadMeetings();
+  });
+  
+  // Chart initialization
+  Chart.defaults.font.family = "'DM Sans', sans-serif";
+  Chart.defaults.color = '#94a3b8';
+
+  {% if recent_checkins %}
+  const scores = [{% for c in recent_checkins %}{{ c.mood_score }},{% endfor %}];
+  const dist = [0, 0, 0, 0];
+  scores.forEach(s => {
+    if (s <= 3) dist[0]++;
+    else if (s <= 5) dist[1]++;
+    else if (s <= 7) dist[2]++;
+    else dist[3]++;
+  });
+
+  if (document.getElementById('moodBarChart')) {
+    new Chart(document.getElementById('moodBarChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Low\n1–3', 'Neutral\n4–5', 'Good\n6–7', 'Great\n8–10'],
+        datasets: [{
+          data: dist,
+          backgroundColor: [
+            'rgba(239,68,68,0.80)',
+            'rgba(245,158,11,0.80)',
+            'rgba(0,48,135,0.80)',
+            'rgba(16,185,129,0.80)',
+          ],
+          borderRadius: 7, borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 1, font: { size: 10 } } },
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+  }
+  {% endif %}
+</script>
 {% endblock %}
