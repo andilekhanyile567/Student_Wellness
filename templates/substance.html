@@ -1,0 +1,850 @@
+{% extends "base.html" %}
+
+{% block title %}Caffeine & Alcohol Tracker - DUT Wellness{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Professional Business Styling */
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .page-header h1 {
+        font-size: 1.875rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-header p {
+        color: #6b7280;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+    
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+    
+    .stat-card:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .stat-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .stat-icon.caffeine {
+        background: #fef3c7;
+        color: #b45309;
+    }
+    
+    .stat-icon.alcohol {
+        background: #f3e8ff;
+        color: #7c3aed;
+    }
+    
+    .stat-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0.5rem 0;
+    }
+    
+    .stat-unit {
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-weight: 400;
+    }
+    
+    .stat-recommendation {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        margin-top: 0.5rem;
+    }
+    
+    .progress-bar-container {
+        margin-top: 1rem;
+    }
+    
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.7rem;
+        color: #9ca3af;
+        margin-bottom: 0.25rem;
+    }
+    
+    .progress-bg {
+        background: #f3f4f6;
+        border-radius: 0.5rem;
+        height: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        border-radius: 0.5rem;
+        transition: width 0.5s ease;
+    }
+    
+    .progress-fill.caffeine {
+        background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .progress-fill.alcohol {
+        background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+    
+    /* Quick Add Buttons */
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .action-btn {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .action-btn:hover {
+        border-color: #f59e0b;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-btn.alcohol:hover {
+        border-color: #8b5cf6;
+    }
+    
+    .action-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .action-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.25rem;
+    }
+    
+    .action-desc {
+        font-size: 0.75rem;
+        color: #9ca3af;
+    }
+    
+    /* Logs Section */
+    .logs-section {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    
+    /* Log Entry Cards */
+    .log-entry {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .log-entry:hover {
+        background: #ffffff;
+        border-color: #f59e0b;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .log-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+    }
+    
+    .log-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    
+    .log-icon.caffeine {
+        background: #fef3c7;
+        color: #b45309;
+    }
+    
+    .log-icon.alcohol {
+        background: #f3e8ff;
+        color: #7c3aed;
+    }
+    
+    .log-details {
+        flex: 1;
+    }
+    
+    .log-amount {
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #111827;
+    }
+    
+    .log-notes {
+        font-size: 0.7rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+    
+    .log-time {
+        font-size: 0.7rem;
+        color: #9ca3af;
+        white-space: nowrap;
+        margin-left: 1rem;
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: #ffffff;
+        border-radius: 1rem;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #9ca3af;
+        transition: color 0.2s;
+    }
+    
+    .modal-close:hover {
+        color: #374151;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-label .required {
+        color: #ef4444;
+    }
+    
+    .form-select, .form-input, .form-textarea {
+        width: 100%;
+        padding: 0.625rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        font-family: inherit;
+        background: #ffffff;
+    }
+    
+    .form-select:focus, .form-input:focus, .form-textarea:focus {
+        outline: none;
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+    
+    .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    .helper-text {
+        font-size: 0.7rem;
+        color: #9ca3af;
+        margin-top: 0.25rem;
+    }
+    
+    .modal-footer {
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+    
+    /* Button Styles */
+    .btn-primary {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 0.625rem 1.25rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-state-text {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    /* Toast Notification */
+    .toast {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: #10b981;
+        color: white;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 1100;
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .toast.error {
+        background: #ef4444;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+        
+        .log-entry {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .log-time {
+            align-self: flex-end;
+            margin-left: 0;
+        }
+        
+        .page-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1>Substance Tracker</h1>
+                <p>Monitor your caffeine and alcohol intake for better health and wellness</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <!-- Caffeine Card -->
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon caffeine">
+                    <i class="fas fa-mug-hot"></i>
+                </div>
+                <div>
+                    <div class="stat-title">Caffeine Today</div>
+                    <div class="stat-value">
+                        <span id="totalCaffeine">0</span>
+                        <span class="stat-unit">mg</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-recommendation">
+                <i class="fas fa-info-circle" style="font-size: 0.7rem;"></i> Recommended max: 400mg/day
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-label">
+                    <span>0 mg</span>
+                    <span>400 mg</span>
+                </div>
+                <div class="progress-bg">
+                    <div id="caffeineProgress" class="progress-fill caffeine" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alcohol Card -->
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon alcohol">
+                    <i class="fas fa-wine-bottle"></i>
+                </div>
+                <div>
+                    <div class="stat-title">Alcohol Today</div>
+                    <div class="stat-value">
+                        <span id="totalAlcohol">0</span>
+                        <span class="stat-unit">units</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-recommendation">
+                <i class="fas fa-info-circle" style="font-size: 0.7rem;"></i> Recommended max: 2-3 units/day
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-label">
+                    <span>0 units</span>
+                    <span>3 units</span>
+                </div>
+                <div class="progress-bg">
+                    <div id="alcoholProgress" class="progress-fill alcohol" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Add Buttons -->
+    <div class="action-buttons">
+        <button onclick="openSubstanceModal('caffeine')" class="action-btn">
+            <div class="action-icon">☕</div>
+            <div class="action-label">Log Caffeine</div>
+            <div class="action-desc">Coffee, tea, energy drinks</div>
+        </button>
+        <button onclick="openSubstanceModal('alcohol')" class="action-btn alcohol">
+            <div class="action-icon">🍷</div>
+            <div class="action-label">Log Alcohol</div>
+            <div class="action-desc">Beer, wine, spirits</div>
+        </button>
+    </div>
+    
+    <!-- Today's Logs -->
+    <div class="logs-section">
+        <div class="section-title">
+            <i class="fas fa-list-ul" style="color: #f59e0b;"></i>
+            Today's Activity Log
+        </div>
+        <div id="logsList">
+            <!-- Logs will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Substance Modal -->
+<div id="substanceModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Log Caffeine</h3>
+            <button onclick="closeSubstanceModal()" class="modal-close">&times;</button>
+        </div>
+        
+        <form id="substanceForm">
+            <input type="hidden" id="substanceType">
+            
+            <div class="modal-body">
+                <div id="caffeineFields" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">Caffeine Amount <span class="required">*</span></label>
+                        <select id="caffeineAmount" class="form-select">
+                            <option value="80">☕ Coffee (80mg)</option>
+                            <option value="40">🍵 Tea (40mg)</option>
+                            <option value="30">🥤 Soda (30mg)</option>
+                            <option value="50">⚡ Energy Drink (50mg)</option>
+                            <option value="100">💪 Double Espresso (100mg)</option>
+                            <option value="0">✏️ Custom Amount</option>
+                        </select>
+                        <input type="number" id="customCaffeine" placeholder="Enter custom amount (mg)" 
+                               class="form-input mt-2 hidden" min="1" max="1000">
+                        <div class="helper-text">Common amounts: Coffee 80-100mg, Tea 40-60mg, Energy drink 50-80mg</div>
+                    </div>
+                </div>
+                
+                <div id="alcoholFields" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">Alcohol Units <span class="required">*</span></label>
+                        <select id="alcoholUnits" class="form-select">
+                            <option value="1">🍺 1 unit (1 beer/cider)</option>
+                            <option value="1.5">🍷 1.5 units (1 glass wine)</option>
+                            <option value="2">🍸 2 units (1 cocktail)</option>
+                            <option value="2.5">🥃 2.5 units (1 spirit measure)</option>
+                            <option value="0">✏️ Custom Units</option>
+                        </select>
+                        <input type="number" id="customAlcohol" step="0.5" placeholder="Enter custom units" 
+                               class="form-input mt-2 hidden" min="0.5" max="20">
+                        <div class="helper-text">1 unit = 1 standard beer/cider, or 1 small glass of wine</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Notes (optional)</label>
+                    <textarea id="substanceNotes" rows="2" 
+                              placeholder="e.g., After workout, With lunch, Celebratory occasion..." 
+                              class="form-textarea"></textarea>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" onclick="closeSubstanceModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i>
+                    Save Entry
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let currentSubstanceType = '';
+
+function loadSubstances() {
+    fetch('/api/substances')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalCaffeine').textContent = data.total_caffeine_mg;
+            document.getElementById('totalAlcohol').textContent = data.total_alcohol_units;
+            
+            const caffeinePercent = Math.min((data.total_caffeine_mg / 400) * 100, 100);
+            document.getElementById('caffeineProgress').style.width = caffeinePercent + '%';
+            
+            const alcoholPercent = Math.min((data.total_alcohol_units / 3) * 100, 100);
+            document.getElementById('alcoholProgress').style.width = alcoholPercent + '%';
+            
+            const logsList = document.getElementById('logsList');
+            if (data.logs.length === 0) {
+                logsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <div class="empty-state-text">No logs for today yet. Click above to log your intake.</div>
+                    </div>
+                `;
+            } else {
+                logsList.innerHTML = data.logs.map(log => `
+                    <div class="log-entry">
+                        <div class="log-info">
+                            <div class="log-icon ${log.substance_type === 'caffeine' ? 'caffeine' : 'alcohol'}">
+                                ${log.substance_type === 'caffeine' ? '☕' : '🍷'}
+                            </div>
+                            <div class="log-details">
+                                <div class="log-amount">
+                                    ${log.substance_type === 'caffeine' ? `${log.caffeine_mg}mg caffeine` : `${log.alcohol_units} units alcohol`}
+                                </div>
+                                ${log.notes ? `<div class="log-notes">${escapeHtml(log.notes)}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="log-time">
+                            <i class="far fa-clock"></i> ${log.time}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Handle caffeine amount selection
+document.getElementById('caffeineAmount').addEventListener('change', function() {
+    const customField = document.getElementById('customCaffeine');
+    if (this.value === '0') {
+        customField.classList.remove('hidden');
+        customField.required = true;
+    } else {
+        customField.classList.add('hidden');
+        customField.required = false;
+        customField.value = '';
+    }
+});
+
+// Handle alcohol units selection
+document.getElementById('alcoholUnits').addEventListener('change', function() {
+    const customField = document.getElementById('customAlcohol');
+    if (this.value === '0') {
+        customField.classList.remove('hidden');
+        customField.required = true;
+    } else {
+        customField.classList.add('hidden');
+        customField.required = false;
+        customField.value = '';
+    }
+});
+
+// Form submission
+document.getElementById('substanceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    let substanceData = {
+        substance_type: currentSubstanceType,
+        notes: document.getElementById('substanceNotes').value
+    };
+    
+    if (currentSubstanceType === 'caffeine') {
+        let caffeineValue = document.getElementById('caffeineAmount').value;
+        if (caffeineValue === '0') {
+            caffeineValue = document.getElementById('customCaffeine').value;
+            if (!caffeineValue) {
+                showToast('Please enter the caffeine amount', 'error');
+                return;
+            }
+        }
+        substanceData.caffeine_mg = parseInt(caffeineValue);
+        substanceData.alcohol_units = null;
+        
+        // Show health tip based on amount
+        if (substanceData.caffeine_mg > 200) {
+            showToast('⚠️ High caffeine intake! Consider spreading out your consumption.', 'info');
+        }
+    } else {
+        let alcoholValue = document.getElementById('alcoholUnits').value;
+        if (alcoholValue === '0') {
+            alcoholValue = document.getElementById('customAlcohol').value;
+            if (!alcoholValue) {
+                showToast('Please enter the alcohol units', 'error');
+                return;
+            }
+        }
+        substanceData.alcohol_units = parseFloat(alcoholValue);
+        substanceData.caffeine_mg = null;
+        
+        // Show health tip based on amount
+        if (substanceData.alcohol_units > 3) {
+            showToast('⚠️ High alcohol intake! Remember to drink responsibly.', 'info');
+        }
+    }
+    
+    fetch('/api/substances', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(substanceData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        showToast('Entry logged successfully! +1 point', 'success');
+        closeSubstanceModal();
+        document.getElementById('substanceForm').reset();
+        document.getElementById('customCaffeine').classList.add('hidden');
+        document.getElementById('customAlcohol').classList.add('hidden');
+        loadSubstances();
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+function openSubstanceModal(type) {
+    currentSubstanceType = type;
+    const modal = document.getElementById('substanceModal');
+    const title = document.getElementById('modalTitle');
+    const caffeineFields = document.getElementById('caffeineFields');
+    const alcoholFields = document.getElementById('alcoholFields');
+    
+    if (type === 'caffeine') {
+        title.innerHTML = '<i class="fas fa-mug-hot"></i> Log Caffeine Intake';
+        caffeineFields.classList.remove('hidden');
+        alcoholFields.classList.add('hidden');
+    } else {
+        title.innerHTML = '<i class="fas fa-wine-bottle"></i> Log Alcohol Intake';
+        caffeineFields.classList.add('hidden');
+        alcoholFields.classList.remove('hidden');
+    }
+    
+    modal.classList.add('active');
+}
+
+function closeSubstanceModal() {
+    document.getElementById('substanceModal').classList.remove('active');
+    document.getElementById('substanceForm').reset();
+    document.getElementById('customCaffeine').classList.add('hidden');
+    document.getElementById('customAlcohol').classList.add('hidden');
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+    toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', loadSubstances);
+</script>
+{% endblock %}
