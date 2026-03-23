@@ -318,6 +318,55 @@
             <i class="fa-solid fa-chart-line"></i><span>My Progress</span>
           </a>
         </li>
+        <li><div class="nav-section">Health Tracking</div></li>
+        <li>
+          <a href="{{ url_for('medications') }}"
+             class="{% if request.endpoint == 'medications' %}active{% endif %}">
+            <i class="fa-solid fa-pills"></i><span>Medications</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('hydration') }}"
+             class="{% if request.endpoint == 'hydration' %}active{% endif %}">
+            <i class="fa-solid fa-droplet"></i><span>Hydration</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('pain_logs') }}"
+             class="{% if request.endpoint == 'pain_logs' %}active{% endif %}">
+            <i class="fa-solid fa-face-frown"></i><span>Pain Log</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('substances') }}"
+             class="{% if request.endpoint == 'substances' %}active{% endif %}">
+            <i class="fa-solid fa-mug-hot"></i><span>Caffeine & Alcohol</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('cycle') }}"
+             class="{% if request.endpoint == 'cycle' %}active{% endif %}">
+            <i class="fa-solid fa-female"></i><span>Cycle Tracker</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('sleep_logs') }}"
+             class="{% if request.endpoint == 'sleep_logs' %}active{% endif %}">
+            <i class="fa-solid fa-bed"></i><span>Sleep Log</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('nutrition') }}"
+             class="{% if request.endpoint == 'nutrition' %}active{% endif %}">
+            <i class="fa-solid fa-utensils"></i><span>Nutrition</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('exercise') }}"
+             class="{% if request.endpoint == 'exercise' %}active{% endif %}">
+            <i class="fa-solid fa-person-running"></i><span>Exercise</span>
+          </a>
+        </li>
 
         <li><div class="nav-section">Support</div></li>
         <li>
@@ -377,6 +426,7 @@
         <li><div class="nav-section">Management</div></li>
         <li><a href="{{ url_for('forum') }}"><i class="fa-solid fa-comments"></i><span>Forum</span></a></li>
         <li><a href="{{ url_for('resources') }}"><i class="fa-solid fa-book-open"></i><span>Resources</span></a></li>
+        <li><a href="{{ url_for('admin_rewards') }}"><i class="fa-solid fa-trophy"></i><span>Rewards</span></a></li>
 
       {% endif %}
 
