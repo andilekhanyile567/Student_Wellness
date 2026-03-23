@@ -8,6 +8,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
+    /* Your existing CSS here - keep it the same */
     :root {
       --sidebar-bg: #0f172a;
       --sidebar-hover: #1e293b;
@@ -207,23 +208,7 @@
     .page-head p { font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; }
     .head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
-    /* ═══════════════════════════════════════
-       ANNOUNCEMENT
-    ═══════════════════════════════════════ */
-    .ann-bar {
-      background: var(--card); border: 1px solid var(--border);
-      border-left: 3px solid var(--accent);
-      border-radius: 10px; padding: 10px 16px;
-      display: flex; gap: 10px; align-items: flex-start;
-      margin-bottom: 1.2rem;
-    }
-    .ann-bar i { color: var(--accent); margin-top: 2px; flex-shrink: 0; font-size: 0.82rem; }
-    .ann-title { font-size: 0.82rem; font-weight: 700; color: var(--text-primary); }
-    .ann-body  { font-size: 0.74rem; color: var(--text-secondary); margin-top: 2px; line-height: 1.5; }
-
-    /* ═══════════════════════════════════════
-       KPI CARDS
-    ═══════════════════════════════════════ */
+    /* KPI CARDS */
     .kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.2rem; }
     .kpi-card {
       background: var(--card); border: 1px solid var(--border);
@@ -260,16 +245,12 @@
     .kpi-progress { height: 3px; background: #f1f5f9; border-radius: 2px; margin-top: 12px; }
     .kpi-progress-bar { height: 100%; border-radius: 2px; }
 
-    /* ═══════════════════════════════════════
-       GRID LAYOUTS
-    ═══════════════════════════════════════ */
+    /* Grid layouts */
     .grid-3-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1rem; margin-bottom: 1rem; }
     .grid-2   { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
     .grid-3   { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
 
-    /* ═══════════════════════════════════════
-       CARD
-    ═══════════════════════════════════════ */
+    /* Cards */
     .card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 1.3rem;
@@ -286,189 +267,17 @@
     .card-title .ti { font-size: 0.75rem; color: var(--accent); }
     .card-subtitle { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
 
-    /* ═══════════════════════════════════════
-       CHECK-IN CTA BANNER
-    ═══════════════════════════════════════ */
-    .cta-card {
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #312e81 100%);
-      border-radius: var(--radius);
-      padding: 1.4rem; color: white; margin-bottom: 1rem;
-      position: relative; overflow: hidden;
-    }
-    .cta-card::before {
-      content: '';
-      position: absolute; top: -40px; right: -40px;
-      width: 160px; height: 160px; border-radius: 50%;
-      background: rgba(99,102,241,0.15);
-    }
-    .cta-card::after {
-      content: '';
-      position: absolute; bottom: -50px; right: 30px;
-      width: 120px; height: 120px; border-radius: 50%;
-      background: rgba(99,102,241,0.10);
-    }
-    .cta-done-badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.3);
-      color: #6ee7b7; padding: 3px 10px; border-radius: 20px;
-      font-size: 0.68rem; font-weight: 600; margin-bottom: 8px;
-    }
-    .cta-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; position: relative; z-index: 1; }
-    .cta-card p  { font-size: 0.74rem; opacity: 0.65; margin-bottom: 12px; position: relative; z-index: 1; }
-    .cta-btns { display: flex; gap: 7px; flex-wrap: wrap; position: relative; z-index: 1; }
-    .btn-cta-primary {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 7px 14px; background: white; color: #1e1b4b;
-      border-radius: 7px; font-size: 0.74rem; font-weight: 700;
-      text-decoration: none; border: none; cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    .btn-cta-primary:hover { opacity: 0.9; }
-    .btn-cta-ghost {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 7px 14px; background: rgba(255,255,255,0.1);
-      color: white; border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 7px; font-size: 0.74rem; font-weight: 600;
-      text-decoration: none; transition: background 0.2s;
-    }
-    .btn-cta-ghost:hover { background: rgba(255,255,255,0.18); }
-
-    /* ═══════════════════════════════════════
-       CHART CONTAINERS
-    ═══════════════════════════════════════ */
+    /* Chart containers */
     .chart-220 { position: relative; height: 220px; }
     .chart-180 { position: relative; height: 180px; }
     .chart-140 { position: relative; height: 140px; }
 
-    /* ═══════════════════════════════════════
-       MOOD HISTORY TABLE
-    ═══════════════════════════════════════ */
-    .mood-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-    .mood-table thead th {
-      text-align: left; padding: 7px 10px;
-      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em;
-      text-transform: uppercase; color: var(--text-muted);
-      background: #f8fafc; border-bottom: 1px solid var(--border);
-    }
-    .mood-table tbody td { padding: 9px 10px; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
-    .mood-table tbody tr:hover td { background: #f8fafc; }
-    .mood-table tbody tr:last-child td { border-bottom: none; }
+    /* Empty state */
+    .empty { text-align: center; padding: 2.5rem 0; color: var(--text-muted); }
+    .empty i { font-size: 1.8rem; display: block; margin-bottom: 8px; opacity: 0.4; }
+    .empty p { font-size: 0.76rem; }
 
-    .mood-ball {
-      width: 30px; height: 30px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.72rem; font-weight: 700; color: white;
-    }
-    .mb-1,.mb-2,.mb-3 { background: #ef4444; }
-    .mb-4,.mb-5       { background: #f97316; }
-    .mb-6,.mb-7       { background: #eab308; }
-    .mb-8,.mb-9       { background: #22c55e; }
-    .mb-10            { background: #16a34a; }
-
-    .mood-bar-mini { height: 5px; border-radius: 3px; background: #f1f5f9; width: 80px; }
-    .mood-bar-fill-mini { height: 100%; border-radius: 3px; }
-
-    /* ═══════════════════════════════════════
-       AI FEEDBACK CARD
-    ═══════════════════════════════════════ */
-    .ai-card {
-      background: linear-gradient(135deg, #fafafa 0%, #f0f4ff 100%);
-      border: 1px solid #e0e7ff; border-radius: var(--radius);
-      padding: 1.1rem;
-    }
-    .ai-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-    .ai-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
-    .ai-title { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); }
-    .ai-sub   { font-size: 0.65rem; color: var(--text-muted); }
-    .ai-tip {
-      display: flex; align-items: flex-start; gap: 8px;
-      padding: 7px 10px; background: white; border: 1px solid #e0e7ff;
-      border-radius: 8px; font-size: 0.74rem; color: var(--text-secondary);
-      line-height: 1.5; margin-bottom: 6px;
-    }
-    .ai-tip i { color: var(--accent); margin-top: 2px; flex-shrink: 0; font-size: 0.7rem; }
-    .ai-tip:last-child { margin-bottom: 0; }
-
-    /* ═══════════════════════════════════════
-       SESSION ROWS
-    ═══════════════════════════════════════ */
-    .sess-row {
-      display: flex; align-items: center; gap: 12px;
-      padding: 9px 0; border-bottom: 1px solid #f8fafc;
-    }
-    .sess-row:last-child { border-bottom: none; }
-    .sess-icon { width: 36px; height: 36px; border-radius: 9px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
-    .sess-type { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
-    .sess-date { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
-    .sess-pill { font-size: 0.6rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; margin-left: auto; }
-    .sp-pending   { background: #fef9c3; color: #854d0e; }
-    .sp-confirmed { background: var(--green-soft); color: #065f46; }
-    .sp-cancelled { background: var(--red-soft); color: #991b1b; }
-    .sp-completed { background: var(--purple-soft); color: #4c1d95; }
-
-    /* ═══════════════════════════════════════
-       FORUM ROWS
-    ═══════════════════════════════════════ */
-    .forum-item {
-      display: flex; gap: 10px; align-items: flex-start;
-      padding: 9px 0; border-bottom: 1px solid #f8fafc; text-decoration: none;
-    }
-    .forum-item:last-child { border-bottom: none; }
-    .forum-item:hover .fi-title { color: var(--accent); }
-    .forum-cat { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-top: 6px; flex-shrink: 0; }
-    .fi-title { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); transition: color 0.15s; line-height: 1.3; }
-    .fi-meta  { font-size: 0.68rem; color: var(--text-muted); margin-top: 3px; }
-    .pinned-tag { background: var(--purple-soft); color: var(--purple); font-size: 0.58rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-right: 5px; }
-
-    /* ═══════════════════════════════════════
-       WELLNESS SCORE RING
-    ═══════════════════════════════════════ */
-    .score-wrap {
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; position: relative;
-    }
-    .score-canvas-wrap { position: relative; width: 130px; height: 130px; }
-    .score-label {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-    }
-    .score-num { font-size: 1.6rem; font-weight: 700; color: var(--text-primary); font-family: 'Playfair Display', serif; line-height: 1; }
-    .score-pct { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
-    .score-legend { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; width: 100%; }
-    .sl-item { display: flex; align-items: center; gap: 7px; font-size: 0.72rem; color: var(--text-secondary); }
-    .sl-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-    /* ═══════════════════════════════════════
-       QUICK RESOURCES
-    ═══════════════════════════════════════ */
-    .resource-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 0; border-bottom: 1px solid #f8fafc; text-decoration: none;
-    }
-    .resource-item:last-child { border-bottom: none; }
-    .resource-item:hover .ri-title { color: var(--accent); }
-    .ri-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; flex-shrink: 0; }
-    .ri-title { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); transition: color 0.15s; }
-    .ri-sub   { font-size: 0.66rem; color: var(--text-muted); }
-    .ri-arrow { margin-left: auto; color: var(--text-muted); font-size: 0.7rem; }
-
-    /* ═══════════════════════════════════════
-       SOS STRIP
-    ═══════════════════════════════════════ */
-    .sos-strip {
-      background: var(--card); border: 1.5px solid #fecaca;
-      border-radius: var(--radius); padding: 1rem 1.4rem;
-      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-    .sos-dot { width: 38px; height: 38px; border-radius: 9px; background: #fee2e2; color: var(--red); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
-    .sos-text h4 { font-size: 0.82rem; font-weight: 700; color: var(--text-primary); }
-    .sos-text p  { font-size: 0.7rem; color: var(--text-muted); }
-    .sos-actions { display: flex; gap: 7px; margin-left: auto; flex-wrap: wrap; }
-
-    /* ═══════════════════════════════════════
-       BUTTONS
-    ═══════════════════════════════════════ */
+    /* Buttons */
     .btn {
       display: inline-flex; align-items: center; gap: 5px;
       padding: 7px 14px; border-radius: 8px;
@@ -478,33 +287,15 @@
     }
     .btn-block { width: 100%; justify-content: center; }
     .btn-sm { padding: 5px 11px; font-size: 0.7rem; }
-    .btn-indigo { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(99,102,241,0.3); }
+    .btn-indigo { background: var(--accent); color: white; }
     .btn-indigo:hover { background: #4f46e5; }
     .btn-dark   { background: var(--text-primary); color: white; }
     .btn-dark:hover { background: #1e293b; }
     .btn-ghost  { background: #f8fafc; color: var(--text-secondary); border: 1px solid var(--border); }
     .btn-ghost:hover { background: #f1f5f9; }
-    .btn-red    { background: var(--red); color: white; animation: pulse 2.5s infinite; }
-    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.35)} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0)} }
-    .btn-red:hover { background: #dc2626; }
-    .btn-outline-red { background: white; color: var(--red); border: 1.5px solid #fca5a5; }
-    .btn-outline-red:hover { background: #fff5f5; }
-    .btn-outline { background: white; color: var(--text-secondary); border: 1.5px solid var(--border); }
-    .btn-outline:hover { background: #f8fafc; }
+    .btn-red    { background: var(--red); color: white; }
 
-    /* ═══════════════════════════════════════
-       UTILITY
-    ═══════════════════════════════════════ */
-    .mt-1 { margin-top: 0.5rem; }
-    .mt-2 { margin-top: 1rem; }
-    .empty { text-align: center; padding: 2.5rem 0; color: var(--text-muted); }
-    .empty i { font-size: 1.8rem; display: block; margin-bottom: 8px; opacity: 0.4; }
-    .empty p { font-size: 0.76rem; }
-    .divider { height: 1px; background: #f1f5f9; margin: 2px 0; }
-
-    /* ═══════════════════════════════════════
-       RESPONSIVE
-    ═══════════════════════════════════════ */
+    /* Responsive */
     @media (max-width: 1200px) { .kpi-row { grid-template-columns: repeat(2,1fr); } }
     @media (max-width: 1024px) { .grid-3-2 { grid-template-columns: 1fr; } .grid-3 { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 900px)  { .grid-2,.grid-3 { grid-template-columns: 1fr; } }
@@ -520,11 +311,8 @@
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════
-     SIDEBAR
-═══════════════════════════════════════ -->
+<!-- Sidebar -->
 <nav class="sidebar" id="sidebar">
-
   <div class="sb-brand">
     <div class="sb-brand-icon">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -561,6 +349,36 @@
   </div>
 
   <div class="sb-group">
+    <div class="sb-group-label">Health Tracking</div>
+    <ul class="sb-nav">
+      <li><a href="{{ url_for('medications') }}">
+        <span class="icon"><i class="fa-solid fa-pills"></i></span> Medications
+      </a></li>
+      <li><a href="{{ url_for('hydration') }}">
+        <span class="icon"><i class="fa-solid fa-droplet"></i></span> Hydration
+      </a></li>
+      <li><a href="{{ url_for('pain_logs') }}">
+        <span class="icon"><i class="fa-solid fa-face-frown"></i></span> Pain Log
+      </a></li>
+      <li><a href="{{ url_for('substances') }}">
+        <span class="icon"><i class="fa-solid fa-mug-hot"></i></span> Caffeine & Alcohol
+      </a></li>
+      <li><a href="{{ url_for('cycle') }}">
+        <span class="icon"><i class="fa-solid fa-female"></i></span> Cycle Tracker
+      </a></li>
+      <li><a href="{{ url_for('sleep_logs') }}">
+        <span class="icon"><i class="fa-solid fa-bed"></i></span> Sleep Log
+      </a></li>
+      <li><a href="{{ url_for('nutrition') }}">
+        <span class="icon"><i class="fa-solid fa-utensils"></i></span> Nutrition
+      </a></li>
+      <li><a href="{{ url_for('exercise') }}">
+        <span class="icon"><i class="fa-solid fa-person-running"></i></span> Exercise
+      </a></li>
+    </ul>
+  </div>
+
+  <div class="sb-group">
     <div class="sb-group-label">Support</div>
     <ul class="sb-nav">
       <li><a href="{{ url_for('forum') }}">
@@ -571,6 +389,9 @@
       </a></li>
       <li><a href="{{ url_for('resources') }}">
         <span class="icon"><i class="fa-solid fa-book-open"></i></span> Resources
+      </a></li>
+      <li><a href="{{ url_for('rewards') }}">
+        <span class="icon"><i class="fa-solid fa-trophy"></i></span> Rewards
       </a></li>
     </ul>
   </div>
@@ -597,12 +418,8 @@
   </div>
 </nav>
 
-<!-- ═══════════════════════════════════════
-     MAIN
-═══════════════════════════════════════ -->
+<!-- Main Content -->
 <div class="main">
-
-  <!-- Topbar -->
   <header class="topbar">
     <button class="topbar-hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')">
       <i class="fa-solid fa-bars"></i>
@@ -617,14 +434,14 @@
     </div>
   </header>
 
-  <!-- Flash -->
+  <!-- Flash Messages -->
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
   <div class="flash-zone">
-    {% for cat, msg in messages %}
-    <div class="flash flash-{{ cat }}">
-      <i class="fa-solid {% if cat=='success' %}fa-circle-check{% elif cat=='danger' %}fa-circle-exclamation{% else %}fa-circle-info{% endif %}"></i>
-      {{ msg }}
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+      <i class="fa-solid {% if category=='success' %}fa-circle-check{% elif category=='danger' %}fa-circle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+      {{ message }}
       <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
     </div>
     {% endfor %}
@@ -632,13 +449,11 @@
   {% endif %}
   {% endwith %}
 
-  <!-- Page -->
+  <!-- Page Content -->
   <div class="page">
-
-    <!-- Page Header -->
     <div class="page-head">
       <div>
-        <h1>Good {% if now.hour < 12 %}Morning{% elif now.hour < 17 %}Afternoon{% else %}Evening{% endif %}, {{ current_user.full_name.split()[0] }} 👋</h1>
+        <h1>Good {{ 'Morning' if now.hour < 12 else 'Afternoon' if now.hour < 17 else 'Evening' }}, {{ current_user.full_name.split()[0] }} 👋</h1>
         <p>Here is your complete wellness overview — stay consistent, stay well.</p>
       </div>
       <div class="head-actions">
@@ -650,19 +465,6 @@
         </a>
       </div>
     </div>
-
-    <!-- Announcement -->
-    {% if announcements %}
-    {% for ann in announcements[:1] %}
-    <div class="ann-bar">
-      <i class="fa-solid fa-bullhorn"></i>
-      <div>
-        <div class="ann-title">{{ ann.title }}</div>
-        <div class="ann-body">{{ ann.content }}</div>
-      </div>
-    </div>
-    {% endfor %}
-    {% endif %}
 
     <!-- KPI Cards -->
     <div class="kpi-row">
@@ -704,338 +506,34 @@
 
       <div class="kpi-card c-sky">
         <div class="kpi-top">
-          <div class="kpi-icon-wrap bg-sky"><i class="fa-solid fa-comments"></i></div>
-          <span class="kpi-badge badge-neu">Community</span>
+          <div class="kpi-icon-wrap bg-sky"><i class="fa-solid fa-droplet"></i></div>
+          <span class="kpi-badge badge-neu">Hydration</span>
         </div>
-        <div class="kpi-value">{{ current_user.posts|length }}</div>
-        <div class="kpi-label">Forum Posts Made</div>
-        <div class="kpi-progress"><div class="kpi-progress-bar" style="width:{{ [current_user.posts|length*20,100]|min }}%;background:var(--sky);"></div></div>
+        <div class="kpi-value">{{ hydration_today }}ml</div>
+        <div class="kpi-label">Water Today</div>
+        <div class="kpi-progress"><div class="kpi-progress-bar" style="width:{{ [hydration_today/20,100]|min }}%;background:var(--sky);"></div></div>
       </div>
     </div>
 
-    <!-- Row 1: Mood Chart (big) + Right column -->
-    <div class="grid-3-2">
-
-      <!-- Left: Line chart -->
-      <div class="card">
-        <div class="card-head">
-          <div>
-            <div class="card-title"><span class="ti"><i class="fa-solid fa-chart-line"></i></span> Mood & Stress Trend</div>
-            <div class="card-subtitle">Last {{ checkins|length if checkins else 0 }} check-ins</div>
-          </div>
-          <a href="{{ url_for('checkin_history') }}" class="btn btn-ghost btn-sm">View All</a>
-        </div>
-        {% if mood_data %}
-        <div class="chart-220"><canvas id="lineChart"></canvas></div>
-        {% else %}
-        <div class="empty">
-          <i class="fa-solid fa-chart-line"></i>
-          <p>No check-ins yet.<br><a href="{{ url_for('checkin') }}" style="color:var(--accent);font-weight:600;">Log your first check-in →</a></p>
-        </div>
-        {% endif %}
-      </div>
-
-      <!-- Right column -->
-      <div style="display:flex;flex-direction:column;gap:1rem;">
-
-        <!-- CTA Banner -->
-        <div class="cta-card">
-          {% if checkins and checkins[0].timestamp.date() == now.date() %}
-          <div class="cta-done-badge"><i class="fa-solid fa-circle-check"></i> Completed today</div>
-          <h3>Check-in Logged ✓</h3>
-          <p>Today's mood: {{ checkins[0].mood_score }}/10. Keep the streak going!</p>
-          {% else %}
-          <h3>Log Today's Check-in</h3>
-          <p>Track your mood, stress and sleep in under 2 minutes.</p>
-          {% endif %}
-          <div class="cta-btns">
-            <a href="{{ url_for('checkin') }}" class="btn-cta-primary"><i class="fa-solid fa-plus"></i> Check-in</a>
-            <a href="{{ url_for('checkin_history') }}" class="btn-cta-ghost"><i class="fa-solid fa-history"></i> History</a>
-          </div>
-        </div>
-
-        <!-- Wellness Score Donut -->
-        <div class="card">
-          <div class="card-head">
-            <div class="card-title"><span class="ti"><i class="fa-solid fa-circle-half-stroke"></i></span> Wellness Score</div>
-          </div>
-          {% if mood_data %}
-          <div class="score-wrap">
-            <div class="score-canvas-wrap">
-              <canvas id="donutChart"></canvas>
-              <div class="score-label">
-                <div class="score-num">{% if checkins %}{{ (checkins|sum(attribute='mood_score')/checkins|length*10)|round|int }}%{% else %}—{% endif %}</div>
-                <div class="score-pct">Score</div>
-              </div>
-            </div>
-            <div class="score-legend">
-              <div class="sl-item"><div class="sl-dot" style="background:var(--accent);"></div> Mood Index</div>
-              <div class="sl-item"><div class="sl-dot" style="background:var(--red);"></div> Stress Level</div>
-              <div class="sl-item"><div class="sl-dot" style="background:#e2e8f0;"></div> Neutral</div>
-            </div>
-          </div>
-          {% else %}
-          <div class="empty"><p>Log a check-in to see your score</p></div>
-          {% endif %}
-        </div>
+    <!-- Simple Dashboard Message -->
+    <div class="card" style="text-align: center; padding: 3rem;">
+      <i class="fa-solid fa-chart-line" style="font-size: 3rem; color: var(--accent); margin-bottom: 1rem;"></i>
+      <h2 style="margin-bottom: 1rem;">Welcome to Your Wellness Dashboard!</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Track your health, mood, and wellness journey all in one place.</p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('checkin') }}" class="btn btn-indigo">Log Daily Check-in</a>
+        <a href="{{ url_for('medications') }}" class="btn btn-ghost">Track Medications</a>
+        <a href="{{ url_for('hydration') }}" class="btn btn-ghost">Log Water Intake</a>
       </div>
     </div>
-
-    <!-- Row 2: Bar Chart + Check-in History table -->
-    <div class="grid-2">
-
-      <!-- Bar chart -->
-      <div class="card">
-        <div class="card-head">
-          <div>
-            <div class="card-title"><span class="ti"><i class="fa-solid fa-chart-bar"></i></span> Mood Distribution</div>
-            <div class="card-subtitle">Colour-coded by intensity</div>
-          </div>
-        </div>
-        {% if mood_data %}
-        <div class="chart-180"><canvas id="barChart"></canvas></div>
-        {% else %}
-        <div class="empty"><i class="fa-solid fa-chart-bar"></i><p>No data yet</p></div>
-        {% endif %}
-      </div>
-
-      <!-- Check-in history table -->
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title"><span class="ti"><i class="fa-solid fa-clock-rotate-left"></i></span> Recent Check-ins</div>
-          <a href="{{ url_for('checkin_history') }}" class="btn btn-ghost btn-sm">All Records</a>
-        </div>
-        {% if checkins %}
-        <div style="overflow-x:auto;">
-          <table class="mood-table">
-            <thead>
-              <tr>
-                <th>Mood</th>
-                <th>Date</th>
-                <th>Stress</th>
-                <th>Sleep</th>
-                <th>Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for c in checkins[:6] %}
-              <tr>
-                <td>
-                  <div class="mood-ball mb-{{ c.mood_score }}">{{ c.mood_score }}</div>
-                </td>
-                <td>
-                  <div style="font-size:0.76rem;font-weight:600;color:var(--text-primary);">{{ c.timestamp.strftime('%d %b') }}</div>
-                  <div style="font-size:0.65rem;color:var(--text-muted);">{{ c.timestamp.strftime('%Y') }}</div>
-                </td>
-                <td>
-                  {% if c.stress_level %}
-                  <span style="font-size:0.72rem;font-weight:700;color:{% if c.stress_level>=7 %}var(--red){% elif c.stress_level>=5 %}var(--orange){% else %}var(--green){% endif %};">{{ c.stress_level }}/10</span>
-                  {% else %}<span style="color:var(--text-muted);font-size:0.72rem;">—</span>{% endif %}
-                </td>
-                <td>
-                  <span style="font-size:0.72rem;color:var(--text-secondary);">{% if c.sleep_hours %}{{ c.sleep_hours }}h{% else %}—{% endif %}</span>
-                </td>
-                <td>
-                  <div class="mood-bar-mini">
-                    <div class="mood-bar-fill-mini" style="width:{{ c.mood_score*10 }}%;background:{% if c.mood_score>=8 %}var(--green){% elif c.mood_score>=6 %}var(--accent){% elif c.mood_score>=4 %}var(--orange){% else %}var(--red){% endif %};"></div>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-        <div class="empty"><i class="fa-solid fa-heart"></i><p>No check-ins recorded yet</p></div>
-        {% endif %}
-        <a href="{{ url_for('checkin') }}" class="btn btn-indigo btn-block mt-2">
-          <i class="fa-solid fa-plus"></i> New Check-in
-        </a>
-      </div>
-    </div>
-
-    <!-- Row 3: AI Feedback + Sessions + Forum -->
-    <div class="grid-3">
-
-      <!-- AI Feedback -->
-      <div class="ai-card">
-        <div class="ai-header">
-          <div class="ai-icon"><i class="fa-solid fa-robot"></i></div>
-          <div>
-            <div class="ai-title">AI Wellness Tips</div>
-            <div class="ai-sub">Based on your latest check-in</div>
-          </div>
-        </div>
-        {% if checkins %}
-        {% set last = checkins[0] %}
-        {% if last.mood_score <= 4 %}
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Consider reaching out to a counsellor for a check-in session.</div>
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Try a short 10-minute walk outdoors to boost your mood.</div>
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Reach out to a friend or peer — connection helps.</div>
-        {% elif last.stress_level and last.stress_level >= 7 %}
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Practice the 4-7-8 breathing technique to reduce stress.</div>
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Break your tasks into smaller, manageable steps today.</div>
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Schedule a 15-minute break every 2 hours.</div>
-        {% elif last.sleep_hours and last.sleep_hours < 6 %}
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Avoid screens 1 hour before bedtime tonight.</div>
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Try a consistent sleep schedule — same time every night.</div>
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Limit caffeine after 2pm to improve sleep quality.</div>
-        {% else %}
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Great job maintaining your wellness routine!</div>
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Keep up the consistent check-ins — it builds resilience.</div>
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Share your positive strategies in the peer forum.</div>
-        {% endif %}
-        {% else %}
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Log your first check-in to get personalised tips.</div>
-        <div class="ai-tip"><i class="fa-solid fa-circle-dot"></i> Daily tracking helps identify patterns and improve wellbeing.</div>
-        {% endif %}
-        <a href="{{ url_for('checkin') }}" class="btn btn-ghost btn-block mt-1" style="font-size:0.72rem;">
-          <i class="fa-solid fa-heart-pulse"></i> Log Check-in
-        </a>
-      </div>
-
-      <!-- Sessions -->
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title"><span class="ti"><i class="fa-solid fa-calendar-check"></i></span> My Sessions</div>
-          <a href="{{ url_for('booking') }}" class="btn btn-dark btn-sm">+ Book</a>
-        </div>
-        {% if bookings %}
-        {% for b in bookings[:4] %}
-        <div class="sess-row">
-          <div class="sess-icon">
-            <i class="fa-solid {% if b.session_type == 'online' %}fa-video{% elif b.session_type == 'group' %}fa-users{% else %}fa-user{% endif %}"></i>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div class="sess-type">{{ b.session_type|title }} Session</div>
-            <div class="sess-date">{% if b.preferred_date %}{{ b.preferred_date.strftime('%d %b %Y · %I:%M %p') }}{% else %}Date TBC{% endif %}</div>
-          </div>
-          <span class="sess-pill sp-{{ b.status }}">{{ b.status }}</span>
-        </div>
-        {% endfor %}
-        {% else %}
-        <div class="empty"><i class="fa-solid fa-calendar"></i><p>No sessions booked</p></div>
-        {% endif %}
-        <a href="{{ url_for('booking') }}" class="btn btn-ghost btn-block mt-2">
-          <i class="fa-solid fa-calendar-plus"></i> Book a Session
-        </a>
-      </div>
-
-      <!-- Forum -->
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title"><span class="ti"><i class="fa-solid fa-comments"></i></span> Peer Forum</div>
-          <a href="{{ url_for('new_post') }}" class="btn btn-dark btn-sm">+ Post</a>
-        </div>
-        {% if posts %}
-        {% for p in posts[:4] %}
-        <a class="forum-item" href="{{ url_for('view_post', post_id=p.id) }}">
-          <div class="forum-cat"></div>
-          <div style="flex:1;min-width:0;">
-            <div class="fi-title">
-              {% if p.is_pinned %}<span class="pinned-tag">PINNED</span>{% endif %}
-              {{ p.title }}
-            </div>
-            <div class="fi-meta">
-              {{ p.timestamp.strftime('%d %b') }} &nbsp;·&nbsp;
-              {{ p.replies|length }} {{ 'reply' if p.replies|length==1 else 'replies' }} &nbsp;·&nbsp;
-              ♥ {{ p.likes }}
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-right" style="color:var(--text-muted);font-size:0.65rem;margin-top:4px;flex-shrink:0;"></i>
-        </a>
-        {% endfor %}
-        {% else %}
-        <div class="empty"><i class="fa-solid fa-comments"></i><p>No posts yet</p></div>
-        {% endif %}
-        <a href="{{ url_for('forum') }}" class="btn btn-ghost btn-block mt-2">
-          Browse All Posts →
-        </a>
-      </div>
-    </div>
-
-    <!-- Row 4: Quick Resources + Weekly Radar -->
-    <div class="grid-2">
-
-      <!-- Quick Resources -->
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title"><span class="ti"><i class="fa-solid fa-book-open"></i></span> Quick Resources</div>
-          <a href="{{ url_for('resources') }}" class="btn btn-ghost btn-sm">View All</a>
-        </div>
-        <a href="{{ url_for('crisis') }}" class="resource-item">
-          <div class="ri-icon" style="background:#fee2e2;color:var(--red);"><i class="fa-solid fa-phone-volume"></i></div>
-          <div style="flex:1;">
-            <div class="ri-title">Crisis Hotlines</div>
-            <div class="ri-sub">Immediate 24/7 support lines</div>
-          </div>
-          <i class="fa-solid fa-chevron-right ri-arrow"></i>
-        </a>
-        <a href="{{ url_for('resources', category='wellness') }}" class="resource-item">
-          <div class="ri-icon" style="background:var(--green-soft);color:var(--green);"><i class="fa-solid fa-spa"></i></div>
-          <div style="flex:1;">
-            <div class="ri-title">Wellness Guides</div>
-            <div class="ri-sub">Mindfulness & self-care tips</div>
-          </div>
-          <i class="fa-solid fa-chevron-right ri-arrow"></i>
-        </a>
-        <a href="{{ url_for('resources', category='academic') }}" class="resource-item">
-          <div class="ri-icon" style="background:var(--accent-soft);color:var(--accent);"><i class="fa-solid fa-graduation-cap"></i></div>
-          <div style="flex:1;">
-            <div class="ri-title">Academic Stress</div>
-            <div class="ri-sub">Study & time management tips</div>
-          </div>
-          <i class="fa-solid fa-chevron-right ri-arrow"></i>
-        </a>
-        <a href="{{ url_for('resources', category='health') }}" class="resource-item">
-          <div class="ri-icon" style="background:var(--purple-soft);color:var(--purple);"><i class="fa-solid fa-stethoscope"></i></div>
-          <div style="flex:1;">
-            <div class="ri-title">Campus Health</div>
-            <div class="ri-sub">Physical health & clinic info</div>
-          </div>
-          <i class="fa-solid fa-chevron-right ri-arrow"></i>
-        </a>
-      </div>
-
-      <!-- Radar / Weekly summary chart -->
-      <div class="card">
-        <div class="card-head">
-          <div>
-            <div class="card-title"><span class="ti"><i class="fa-solid fa-star"></i></span> Wellness Radar</div>
-            <div class="card-subtitle">Multi-dimension overview</div>
-          </div>
-        </div>
-        {% if mood_data %}
-        <div class="chart-180"><canvas id="radarChart"></canvas></div>
-        {% else %}
-        <div class="empty"><i class="fa-solid fa-star"></i><p>No data yet — log check-ins to see radar</p></div>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- SOS Strip -->
-    <div class="sos-strip">
-      <div class="sos-dot"><i class="fa-solid fa-triangle-exclamation"></i></div>
-      <div class="sos-text">
-        <h4>Emergency &amp; Crisis Support</h4>
-        <p>If you are in distress, help is available 24 hours a day, 7 days a week.</p>
-      </div>
-      <div class="sos-actions">
-        <a href="{{ url_for('sos') }}" class="btn btn-red"><i class="fa-solid fa-circle-exclamation"></i> Send SOS Alert</a>
-        <a href="{{ url_for('crisis') }}" class="btn btn-outline-red"><i class="fa-solid fa-phone-volume"></i> Crisis Lines</a>
-        <a href="tel:0800567567" class="btn btn-outline"><i class="fa-solid fa-phone"></i> 0800-567-567</a>
-      </div>
-    </div>
-
-  </div><!-- /page -->
-</div><!-- /main -->
+  </div>
+</div>
 
 <script>
-  // Date
-  const d   = new Date();
-  const fmt = { weekday:'long', day:'numeric', month:'long', year:'numeric' };
-  const ds  = d.toLocaleDateString('en-ZA', fmt);
-  document.getElementById('topbar-date').textContent = ds;
+  // Set current date
+  const d = new Date();
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('topbar-date').textContent = d.toLocaleDateString('en-ZA', options);
 
   // Auto-dismiss flashes
   setTimeout(() => {
@@ -1046,160 +544,13 @@
     });
   }, 5000);
 
-  // Sidebar overlay close
+  // Sidebar close on outside click
   document.addEventListener('click', e => {
-    const sb = document.getElementById('sidebar');
-    if (sb.classList.contains('open') && !sb.contains(e.target) && !e.target.closest('.topbar-hamburger')) {
-      sb.classList.remove('open');
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && !e.target.closest('.topbar-hamburger')) {
+      sidebar.classList.remove('open');
     }
   });
-
-  Chart.defaults.font.family = "'Inter', sans-serif";
-  Chart.defaults.color = '#94a3b8';
-
-  const moodLabels = {{ mood_labels | tojson }};
-  const moodData   = {{ mood_data   | tojson }};
-
-  // ── LINE CHART ──
-  if (moodData.length && document.getElementById('lineChart')) {
-    new Chart(document.getElementById('lineChart'), {
-      type: 'line',
-      data: {
-        labels: moodLabels,
-        datasets: [{
-          label: 'Mood',
-          data: moodData,
-          borderColor: '#6366f1',
-          backgroundColor: 'rgba(99,102,241,0.07)',
-          fill: true, tension: 0.42,
-          pointRadius: 5, pointBackgroundColor: '#6366f1',
-          pointBorderColor: '#fff', pointBorderWidth: 2,
-          borderWidth: 2.5,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            mode: 'index', intersect: false,
-            backgroundColor: '#0f172a',
-            titleColor: '#e2e8f0', bodyColor: '#94a3b8',
-            padding: 10, cornerRadius: 8,
-            callbacks: { label: c => ` Mood: ${c.parsed.y}/10` }
-          }
-        },
-        scales: {
-          y: {
-            min: 0, max: 10,
-            grid: { color: '#f1f5f9' },
-            ticks: { stepSize: 2, font: { size: 11 }, color: '#94a3b8' }
-          },
-          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#94a3b8' } }
-        }
-      }
-    });
-  }
-
-  // ── BAR CHART ──
-  if (moodData.length && document.getElementById('barChart')) {
-    new Chart(document.getElementById('barChart'), {
-      type: 'bar',
-      data: {
-        labels: moodLabels,
-        datasets: [{
-          label: 'Mood',
-          data: moodData,
-          backgroundColor: moodData.map(v =>
-            v >= 8 ? 'rgba(16,185,129,0.80)' :
-            v >= 6 ? 'rgba(99,102,241,0.80)' :
-            v >= 4 ? 'rgba(245,158,11,0.80)' :
-                     'rgba(239,68,68,0.80)'
-          ),
-          borderRadius: 7, borderSkipped: false,
-          hoverBackgroundColor: moodData.map(v =>
-            v >= 8 ? '#10b981' : v >= 6 ? '#6366f1' : v >= 4 ? '#f59e0b' : '#ef4444'
-          ),
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: {
-            min: 0, max: 10,
-            grid: { color: '#f1f5f9' },
-            ticks: { stepSize: 2, font: { size: 11 }, color: '#94a3b8' }
-          },
-          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#94a3b8' } }
-        }
-      }
-    });
-  }
-
-  // ── DOUGHNUT ──
-  if (document.getElementById('donutChart')) {
-    const avg = moodData.length ? moodData.reduce((a,b)=>a+b,0)/moodData.length : 5;
-    const mp = Math.round(avg * 10);
-    const sp = Math.max(0, 100 - mp - 12);
-    const rp = Math.max(0, 100 - mp - sp);
-    new Chart(document.getElementById('donutChart'), {
-      type: 'doughnut',
-      data: {
-        datasets: [{
-          data: [mp, sp, rp],
-          backgroundColor: ['#6366f1', '#ef4444', '#e2e8f0'],
-          borderWidth: 0, hoverOffset: 5,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        cutout: '74%',
-        plugins: { legend: { display: false }, tooltip: { enabled: false } }
-      }
-    });
-  }
-
-  // ── RADAR CHART ──
-  if (moodData.length && document.getElementById('radarChart')) {
-    const avg   = moodData.reduce((a,b)=>a+b,0)/moodData.length;
-    const sleep = {{ checkins[0].sleep_hours if checkins and checkins[0].sleep_hours else 7 }};
-    const stress= {{ checkins[0].stress_level if checkins and checkins[0].stress_level else 5 }};
-    new Chart(document.getElementById('radarChart'), {
-      type: 'radar',
-      data: {
-        labels: ['Mood', 'Sleep', 'Energy', 'Social', 'Stress (inv)'],
-        datasets: [{
-          label: 'Wellness',
-          data: [
-            avg,
-            Math.min(sleep, 10),
-            avg * 0.85,
-            avg * 0.9,
-            10 - (stress || 5)
-          ],
-          backgroundColor: 'rgba(99,102,241,0.12)',
-          borderColor: '#6366f1',
-          pointBackgroundColor: '#6366f1',
-          pointRadius: 4,
-          borderWidth: 2,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          r: {
-            min: 0, max: 10,
-            ticks: { stepSize: 2, font: { size: 10 }, color: '#94a3b8', backdropColor: 'transparent' },
-            grid: { color: '#f1f5f9' },
-            pointLabels: { font: { size: 11 }, color: '#64748b' },
-            angleLines: { color: '#f1f5f9' }
-          }
-        }
-      }
-    });
-  }
 </script>
 </body>
 </html>
