@@ -1,54 +1,558 @@
 {% extends "base.html" %}
-{% block title %}SOS Emergency{% endblock %}
-{% block page_title %}SOS Emergency Alert{% endblock %}
+
+{% block title %}SOS Emergency Alert - DUT Wellness{% endblock %}
+{% block page_title %}Emergency SOS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sos-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+    
+    .sos-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .sos-header {
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        padding: 2rem;
+        text-align: center;
+        color: white;
+        animation: pulse-red 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-red {
+        0%, 100% { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); }
+        50% { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    }
+    
+    .sos-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    
+    .sos-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: shake 0.5s ease-in-out infinite;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-15deg); }
+        75% { transform: rotate(15deg); }
+    }
+    
+    .location-card {
+        background: #f9fafb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin: 1rem;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .location-status {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .location-status.success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .location-status.error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .location-status.pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .location-map {
+        width: 100%;
+        height: 300px;
+        border-radius: 0.75rem;
+        margin: 1rem 0;
+        border: 1px solid #e5e7eb;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .location-details {
+        background: #f3f4f6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        font-family: monospace;
+        font-size: 0.75rem;
+        word-break: break-all;
+        margin-top: 0.5rem;
+        display: none;
+    }
+    
+    .location-details.active {
+        display: block;
+    }
+    
+    .sos-btn {
+        width: calc(100% - 2rem);
+        margin: 1rem;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        animation: pulse-btn 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-btn {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    
+    .sos-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.4);
+        animation: none;
+    }
+    
+    .sos-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        animation: none;
+    }
+    
+    .info-text {
+        color: #6b7280;
+        font-size: 0.875rem;
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .emergency-contacts {
+        background: #ffffff;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        margin: 1rem;
+    }
+    
+    .emergency-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .contact-item:last-child {
+        border-bottom: none;
+    }
+    
+    .contact-number {
+        font-family: monospace;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #dc2626;
+    }
+    
+    .message-input {
+        width: calc(100% - 2rem);
+        margin: 0 1rem 1rem 1rem;
+        padding: 0.75rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        resize: vertical;
+    }
+    
+    .message-input:focus {
+        outline: none;
+        border-color: #dc2626;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+    
+    .toast {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: #10b981;
+        color: white;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 1100;
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .toast.error {
+        background: #ef4444;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div style="max-width:560px;">
-  <div class="card" style="border:3px solid #e74c3c; background:#fff5f5; margin-bottom:1.5rem;">
-    <div style="text-align:center; padding:1rem 0;">
-      <div style="font-size:4rem; animation:sosPulse 1s infinite;">🚨</div>
-      <h2 style="font-family:'Playfair Display',serif; color:#c0392b; font-size:1.8rem; margin:0.5rem 0;">Emergency SOS</h2>
-      <p style="color:#666; font-size:0.9rem;">Sending this alert will immediately notify available counsellors and the wellness team.</p>
-    </div>
-  </div>
-
-  <!-- IMMEDIATE HELP -->
-  <div class="card mb-3" style="border-left:4px solid #e74c3c;">
-    <div class="card-title" style="color:#c0392b;"><i class="fa-solid fa-phone-volume"></i> Immediate Help Lines</div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <a href="tel:0800567567" class="btn btn-danger"><i class="fa-solid fa-phone"></i> DUT Crisis Line: 0800-567-567</a>
-      <a href="tel:0800456789" class="btn" style="background:#c0392b;color:white;"><i class="fa-solid fa-phone"></i> SADAG: 0800-456-789</a>
-      <a href="tel:10111" class="btn btn-ghost"><i class="fa-solid fa-shield"></i> Police Emergency: 10111</a>
-      <a href="tel:10177" class="btn btn-ghost"><i class="fa-solid fa-truck-medical"></i> Ambulance: 10177</a>
-    </div>
-  </div>
-
-  <!-- SOS FORM -->
-  <div class="card">
-    <div class="card-title"><i class="fa-solid fa-triangle-exclamation"></i> Send SOS Alert to Counsellors</div>
-    <form method="POST" action="{{ url_for('sos') }}">
-      <div class="form-group">
-        <label class="form-label">What's happening? (brief description)</label>
-        <textarea name="message" class="form-textarea" rows="3" placeholder="e.g. I am having a panic attack and need immediate support...">{{ request.form.get('message', '') }}</textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Your Location (campus / building)</label>
-        <div class="input-wrap">
-          <i class="fa-solid fa-location-dot input-icon"></i>
-          <input type="text" name="location" class="form-control" placeholder="e.g. Steve Biko Campus, Block D, Room 201">
+<div class="sos-container">
+    <div class="sos-card">
+        <div class="sos-header">
+            <div class="sos-icon">
+                <i class="fas fa-triangle-exclamation"></i>
+            </div>
+            <h1>SOS EMERGENCY</h1>
+            <p>Press the button below to send an immediate alert</p>
         </div>
-      </div>
-      <button type="submit" class="sos-button" style="text-decoration:none; font-size:1.1rem; padding:16px; border:none; cursor:pointer;">
-        <i class="fa-solid fa-circle-exclamation"></i> SEND SOS ALERT NOW
-      </button>
-    </form>
-    <p style="font-size:0.78rem;color:var(--text-muted);text-align:center;margin-top:12px;">
-      <i class="fa-solid fa-lock"></i> Alert is sent securely to all available counsellors
-    </p>
-  </div>
-
-  <div class="mt-2">
-    <a href="{{ url_for('student_dashboard') }}" class="btn btn-ghost btn-block">← Back to Dashboard</a>
-  </div>
+        
+        <div class="location-card">
+            <div class="emergency-title">
+                <i class="fas fa-location-dot" style="color: #dc2626;"></i>
+                Location Services
+            </div>
+            
+            <div id="locationStatus" class="location-status pending">
+                <i class="fas fa-spinner fa-pulse"></i>
+                <span>Checking location services...</span>
+            </div>
+            
+            <div id="locationMap" class="location-map">
+                <i class="fas fa-map-marker-alt" style="font-size: 3rem; color: #9ca3af;"></i>
+                <p style="margin-left: 0.5rem;">Waiting for location...</p>
+            </div>
+            
+            <div id="locationDetails" class="location-details"></div>
+            
+            <div class="info-text">
+                <i class="fas fa-shield-alt"></i> Your location will be shared with counsellors and emergency contacts
+            </div>
+        </div>
+        
+        <textarea id="sosMessage" class="message-input" rows="2" placeholder="Optional: Add any additional details about your situation..."></textarea>
+        
+        <button id="sosButton" class="sos-btn" onclick="sendSOS()">
+            <i class="fas fa-bell"></i> SEND SOS ALERT
+        </button>
+        
+        <div class="emergency-contacts">
+            <div class="emergency-title">
+                <i class="fas fa-phone-alt"></i>
+                Emergency Contacts
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-phone"></i>
+                <span>DUT Campus Security:</span>
+                <span class="contact-number">031-373-2000</span>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-phone"></i>
+                <span>Emergency Services:</span>
+                <span class="contact-number">10111</span>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-phone"></i>
+                <span>Ambulance:</span>
+                <span class="contact-number">10177</span>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-heart"></i>
+                <span>SADAG Crisis Line:</span>
+                <span class="contact-number">0800-567-567</span>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<script>
+let currentLocation = null;
+let watchId = null;
+let map = null;
+
+// Get user location on page load
+document.addEventListener('DOMContentLoaded', function() {
+    getLocation();
+});
+
+function getLocation() {
+    const statusDiv = document.getElementById('locationStatus');
+    
+    if (!navigator.geolocation) {
+        statusDiv.className = 'location-status error';
+        statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Geolocation is not supported by your browser';
+        return;
+    }
+    
+    statusDiv.className = 'location-status pending';
+    statusDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Getting your location...';
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            currentLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                accuracy: position.coords.accuracy,
+                timestamp: new Date().toISOString()
+            };
+            
+            statusDiv.className = 'location-status success';
+            statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Location acquired successfully';
+            
+            showMap(currentLocation.lat, currentLocation.lng);
+            getAddressFromCoordinates(currentLocation.lat, currentLocation.lng);
+            updateLocationDisplay();
+            startWatchingPosition();
+        },
+        function(error) {
+            console.error('Geolocation error:', error);
+            let errorMessage = '';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = 'Location permission denied. Please enable location access to use SOS feature.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = 'Location information unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = 'Location request timed out.';
+                    break;
+                default:
+                    errorMessage = 'An unknown error occurred.';
+            }
+            statusDiv.className = 'location-status error';
+            statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorMessage}`;
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+
+function startWatchingPosition() {
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+    }
+    
+    watchId = navigator.geolocation.watchPosition(
+        function(position) {
+            currentLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                accuracy: position.coords.accuracy,
+                timestamp: new Date().toISOString()
+            };
+            
+            if (map) {
+                map.setView([currentLocation.lat, currentLocation.lng], 15);
+                // Clear existing markers and add new one
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker) {
+                        map.removeLayer(layer);
+                    }
+                });
+                L.marker([currentLocation.lat, currentLocation.lng]).addTo(map)
+                    .bindPopup('Your current location<br>Accuracy: ±' + Math.round(currentLocation.accuracy) + 'm')
+                    .openPopup();
+                
+                // Add accuracy circle
+                L.circle([currentLocation.lat, currentLocation.lng], {
+                    radius: currentLocation.accuracy,
+                    color: '#ef4444',
+                    fillColor: '#ef4444',
+                    fillOpacity: 0.1
+                }).addTo(map);
+            }
+            
+            updateLocationDisplay();
+        },
+        function(error) {
+            console.error('Watch position error:', error);
+        },
+        {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000
+        }
+    );
+}
+
+function getAddressFromCoordinates(lat, lng) {
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.display_name) {
+                currentLocation.address = data.display_name;
+                updateLocationDisplay();
+            }
+        })
+        .catch(error => console.error('Geocoding error:', error));
+}
+
+function updateLocationDisplay() {
+    const detailsDiv = document.getElementById('locationDetails');
+    if (currentLocation) {
+        detailsDiv.classList.add('active');
+        detailsDiv.innerHTML = `
+            <strong>📍 Your Current Location:</strong><br>
+            <strong>Latitude:</strong> ${currentLocation.lat.toFixed(6)}<br>
+            <strong>Longitude:</strong> ${currentLocation.lng.toFixed(6)}<br>
+            <strong>Accuracy:</strong> ±${Math.round(currentLocation.accuracy)} meters<br>
+            ${currentLocation.address ? `<strong>Address:</strong> ${currentLocation.address}<br>` : ''}
+            <strong>Time:</strong> ${new Date(currentLocation.timestamp).toLocaleString()}
+        `;
+    }
+}
+
+function showMap(lat, lng) {
+    const mapDiv = document.getElementById('locationMap');
+    mapDiv.innerHTML = '';
+    mapDiv.style.height = '300px';
+    
+    map = L.map(mapDiv).setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    L.marker([lat, lng]).addTo(map)
+        .bindPopup('Your current location<br>Accuracy: ±' + Math.round(currentLocation.accuracy) + 'm')
+        .openPopup();
+    
+    L.circle([lat, lng], {
+        radius: currentLocation.accuracy,
+        color: '#ef4444',
+        fillColor: '#ef4444',
+        fillOpacity: 0.1
+    }).addTo(map);
+}
+
+async function sendSOS() {
+    const sosButton = document.getElementById('sosButton');
+    const message = document.getElementById('sosMessage').value;
+    
+    sosButton.disabled = true;
+    sosButton.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending SOS Alert...';
+    
+    if (!currentLocation) {
+        await new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    currentLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        timestamp: new Date().toISOString()
+                    };
+                    resolve();
+                },
+                () => resolve(),
+                { timeout: 5000 }
+            );
+        });
+    }
+    
+    const sosData = {
+        message: message || 'EMERGENCY ASSISTANCE NEEDED',
+        location: currentLocation ? {
+            lat: currentLocation.lat,
+            lng: currentLocation.lng,
+            accuracy: currentLocation.accuracy,
+            address: currentLocation.address,
+            timestamp: currentLocation.timestamp
+        } : null
+    };
+    
+    try {
+        const response = await fetch('/api/sos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(sosData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            sosButton.innerHTML = '<i class="fas fa-check-circle"></i> SOS Sent Successfully!';
+            sosButton.style.background = '#10b981';
+            
+            let locationMsg = '';
+            if (currentLocation) {
+                locationMsg = `\n\nLocation Shared:\n${currentLocation.address || `${currentLocation.lat}, ${currentLocation.lng}`}\nAccuracy: ±${Math.round(currentLocation.accuracy)} meters`;
+            }
+            
+            alert(`SOS Alert Sent!\n\nHelp is on the way. Stay where you are and keep your phone nearby.${locationMsg}\n\nCounsellors and emergency contacts have been notified.`);
+            
+            setTimeout(() => {
+                window.location.href = "{{ url_for('student_dashboard') }}";
+            }, 3000);
+        } else {
+            throw new Error(result.error || 'Failed to send SOS');
+        }
+    } catch (error) {
+        console.error('SOS error:', error);
+        sosButton.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Retry SOS';
+        sosButton.disabled = false;
+        showToast('Failed to send SOS. Please check your connection and try again.', 'error');
+    }
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+    toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+</script>
 {% endblock %}
