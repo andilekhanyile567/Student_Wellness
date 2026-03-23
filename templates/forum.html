@@ -2,50 +2,499 @@
 {% block title %}Peer Forum – DUT Wellness{% endblock %}
 {% block page_title %}Peer Support Forum{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ─── Layout ─── */
+  .forum-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 1.5rem;
+    align-items: start;
+    max-width: 1200px;
+  }
+
+  /* ─── Page header ─── */
+  .forum-hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 55%, #312e81 100%);
+    border-radius: 16px;
+    padding: 1.6rem 1.8rem;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+    position: relative; overflow: hidden;
+    margin-bottom: 1.2rem;
+  }
+  .forum-hero::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(99,102,241,0.15);
+  }
+  .forum-hero-text { position: relative; z-index: 1; }
+  .forum-hero-text h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem; font-weight: 700; color: white; margin-bottom: 3px;
+  }
+  .forum-hero-text p { font-size: 0.78rem; color: rgba(255,255,255,0.6); }
+  .forum-hero-stats {
+    display: flex; gap: 1.5rem;
+    position: relative; z-index: 1;
+  }
+  .fhs-item { text-align: center; color: white; }
+  .fhs-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; font-weight: 700; line-height: 1;
+    color: #a5b4fc;
+  }
+  .fhs-lbl { font-size: 0.62rem; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.07em; }
+
+  /* ─── Category filter bar ─── */
+  .cat-bar {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 1.2rem;
+    padding: 0.9rem 1.1rem;
+    background: white; border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .cat-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 14px; border-radius: 100px;
+    font-size: 0.75rem; font-weight: 600;
+    text-decoration: none; color: var(--text-muted);
+    border: 1.5px solid var(--border);
+    background: #f8fafc;
+    transition: all 0.18s; white-space: nowrap;
+  }
+  .cat-pill:hover { border-color: var(--dut-blue); color: var(--dut-blue); background: var(--dut-light); }
+  .cat-pill.active { background: var(--dut-blue); color: white; border-color: var(--dut-blue); }
+
+  /* ─── Sort / Filter row ─── */
+  .sort-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 1rem; flex-wrap: wrap;
+  }
+  .sort-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; }
+  .sort-btn {
+    font-size: 0.72rem; font-weight: 600; padding: 4px 12px;
+    border: 1.5px solid var(--border); border-radius: 100px;
+    background: white; color: var(--text-muted);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .sort-btn.active, .sort-btn:hover { background: var(--dut-blue); color: white; border-color: var(--dut-blue); }
+  .sort-count {
+    margin-left: auto; font-size: 0.72rem; color: var(--text-muted);
+    background: #f1f5f9; padding: 4px 12px; border-radius: 100px;
+  }
+
+  /* ─── Post Card ─── */
+  .post-card {
+    display: block; text-decoration: none;
+    background: white; border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.3rem 1.4rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    transition: all 0.2s;
+    position: relative;
+    margin-bottom: 0.75rem;
+  }
+  .post-card:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+    transform: translateY(-2px);
+    border-color: #c7d2fe;
+  }
+  .post-card.pinned { border-left: 4px solid var(--dut-blue); }
+
+  /* Post top row */
+  .post-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 8px;
+    margin-bottom: 8px;
+  }
+  .post-badges { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .pinned-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.6rem; font-weight: 700; padding: 3px 8px;
+    background: var(--dut-light); color: var(--dut-blue);
+    border-radius: 100px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .cat-tag {
+    font-size: 0.62rem; font-weight: 700; padding: 3px 9px;
+    border-radius: 100px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .ct-mental-health  { background: #ede9fe; color: #4c1d95; }
+  .ct-academic       { background: #eff6ff; color: #1e40af; }
+  .ct-relationships  { background: #fdf2f8; color: #9d174d; }
+  .ct-wellness       { background: #ecfdf5; color: #065f46; }
+  .ct-general        { background: #f1f5f9; color: #475569; }
+  .ct-question       { background: #fff7ed; color: #9a3412; }
+  .post-time { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+
+  /* Post title */
+  .post-title {
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    margin-bottom: 6px; line-height: 1.4;
+    transition: color 0.15s;
+  }
+  .post-card:hover .post-title { color: var(--dut-blue); }
+
+  /* Post preview */
+  .post-preview {
+    font-size: 0.8rem; color: var(--text-muted);
+    line-height: 1.6;
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  /* Post author row */
+  .post-author {
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 10px;
+  }
+  .post-author-avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--dut-blue); color: white;
+    font-size: 0.6rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .post-author-avatar.anon { background: #94a3b8; }
+  .post-author-name { font-size: 0.74rem; font-weight: 600; color: var(--text); }
+
+  /* Post footer */
+  .post-footer {
+    display: flex; align-items: center; gap: 1rem;
+    padding-top: 10px; border-top: 1px solid #f8fafc;
+  }
+  .post-stat {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 0.72rem; color: var(--text-muted);
+    font-weight: 500;
+  }
+  .post-stat i { font-size: 0.68rem; }
+  .post-stat.replies i { color: var(--dut-blue); }
+  .post-stat.likes   i { color: #ef4444; }
+  .post-stat.views   i { color: #94a3b8; }
+  .read-more {
+    margin-left: auto; font-size: 0.72rem; font-weight: 700;
+    color: var(--dut-blue); display: flex; align-items: center; gap: 4px;
+  }
+
+  /* ─── Right Sidebar ─── */
+  .forum-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+
+  /* Sidebar card */
+  .sb-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .sb-title {
+    font-size: 0.78rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 1rem; text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .sb-title i { font-size: 0.72rem; color: var(--dut-blue); }
+
+  /* Community stats */
+  .comm-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .comm-stat {
+    background: #f8fafc; border-radius: 9px;
+    padding: 10px; text-align: center;
+    border: 1px solid var(--border);
+  }
+  .comm-stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 700; color: var(--text); line-height: 1;
+  }
+  .comm-stat-lbl { font-size: 0.62rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* Category list */
+  .cat-list-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 0; border-bottom: 1px solid #f8fafc;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .cat-list-item:last-child { border-bottom: none; }
+  .cat-list-item:hover .cli-name { color: var(--dut-blue); }
+  .cli-left { display: flex; align-items: center; gap: 8px; }
+  .cli-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .cli-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+  .cli-count {
+    font-size: 0.62rem; font-weight: 700; padding: 2px 8px;
+    background: #f1f5f9; color: var(--text-muted); border-radius: 100px;
+  }
+
+  /* Rules card */
+  .rule-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 0.74rem; color: var(--text-muted);
+    line-height: 1.5; margin-bottom: 8px;
+  }
+  .rule-item:last-child { margin-bottom: 0; }
+  .rule-item i { color: var(--dut-blue); margin-top: 2px; flex-shrink: 0; font-size: 0.65rem; }
+
+  /* CTA card */
+  .cta-post-card {
+    background: linear-gradient(135deg, #0f172a, #312e81);
+    border-radius: 14px; padding: 1.3rem;
+    color: white; text-align: center;
+  }
+  .cta-post-card h4 { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 5px; }
+  .cta-post-card p  { font-size: 0.74rem; opacity: 0.65; margin-bottom: 12px; line-height: 1.5; }
+  .btn-post {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px; background: white; color: #1e1b4b;
+    border-radius: 9px; font-size: 0.78rem; font-weight: 700;
+    text-decoration: none; width: 100%; justify-content: center;
+    transition: opacity 0.2s;
+  }
+  .btn-post:hover { opacity: 0.88; }
+
+  /* ─── Empty state ─── */
+  .forum-empty {
+    background: white; border: 1px solid var(--border);
+    border-radius: 14px; text-align: center; padding: 4rem 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .forum-empty-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: #f1f5f9; color: #cbd5e1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; margin: 0 auto 1rem;
+  }
+  .forum-empty h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--text); margin-bottom: 6px; }
+  .forum-empty p  { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.2rem; }
+
+  @media (max-width: 1000px) { .forum-wrapper { grid-template-columns: 1fr; } .forum-sidebar { display: none; } }
+  @media (max-width: 600px)  { .forum-hero-stats { display: none; } }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+<div class="forum-wrapper">
+
+  <!-- ══ LEFT: MAIN CONTENT ══ -->
   <div>
-    <h1>Peer Support Forum</h1>
-    <p>A safe, anonymous space to share and support each other</p>
+
+    <!-- Hero Banner -->
+    <div class="forum-hero">
+      <div class="forum-hero-text">
+        <h2>💬 Peer Support Forum</h2>
+        <p>A safe, anonymous space to share experiences and support each other</p>
+      </div>
+      <div class="forum-hero-stats">
+        <div class="fhs-item">
+          <div class="fhs-num">{{ posts|length }}</div>
+          <div class="fhs-lbl">Posts</div>
+        </div>
+        <div class="fhs-item">
+          <div class="fhs-num">{{ posts|sum(attribute='replies')|list|length if posts else 0 }}</div>
+          <div class="fhs-lbl">Replies</div>
+        </div>
+        <div class="fhs-item">
+          <div class="fhs-num">{{ posts|sum(attribute='likes') if posts else 0 }}</div>
+          <div class="fhs-lbl">Likes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Filter Pills -->
+    <div class="cat-bar">
+      <a href="{{ url_for('forum') }}"
+         class="cat-pill {% if category=='all' %}active{% endif %}">
+        <i class="fa-solid fa-border-all" style="font-size:0.65rem;"></i> All
+      </a>
+      {% set cat_map = {
+        'mental-health': ('🧠','Mental Health','4c1d95'),
+        'academic':      ('📚','Academic','1e40af'),
+        'relationships': ('💞','Relationships','9d174d'),
+        'wellness':      ('💪','Wellness','065f46'),
+        'general':       ('💬','General','475569'),
+        'question':      ('❓','Question','9a3412')
+      } %}
+      {% for cat, (icon, label, color) in cat_map.items() %}
+      <a href="{{ url_for('forum', category=cat) }}"
+         class="cat-pill {% if category==cat %}active{% endif %}">
+        {{ icon }} {{ label }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Sort row -->
+    <div class="sort-row">
+      <span class="sort-label">Sort:</span>
+      <button class="sort-btn active">Latest</button>
+      <button class="sort-btn">Most Liked</button>
+      <button class="sort-btn">Most Replies</button>
+      <span class="sort-count">{{ posts|length }} post{{ 's' if posts|length != 1 }}</span>
+      <a href="{{ url_for('new_post') }}" class="btn btn-primary" style="padding:6px 16px;font-size:0.76rem;margin-left:8px;">
+        <i class="fa-solid fa-pen-to-square"></i> New Post
+      </a>
+    </div>
+
+    <!-- Posts -->
+    {% if posts %}
+    <div>
+      {% for p in posts %}
+      <a href="{{ url_for('view_post', post_id=p.id) }}"
+         class="post-card {% if p.is_pinned %}pinned{% endif %}">
+
+        <!-- Top: badges + time -->
+        <div class="post-top">
+          <div class="post-badges">
+            {% if p.is_pinned %}
+            <span class="pinned-tag"><i class="fa-solid fa-thumbtack" style="font-size:0.55rem;"></i> Pinned</span>
+            {% endif %}
+            {% set cat_slug = (p.category or 'general').replace(' ', '-').lower() %}
+            <span class="cat-tag ct-{{ cat_slug }}">
+              {{ {'mental-health':'🧠','academic':'📚','relationships':'💞','wellness':'💪','general':'💬','question':'❓'}.get(cat_slug,'💬') }}
+              {{ (p.category or 'general')|replace('-',' ')|title }}
+            </span>
+          </div>
+          <span class="post-time">{{ p.timestamp.strftime('%d %b %Y') }}</span>
+        </div>
+
+        <!-- Author -->
+        <div class="post-author">
+          <div class="post-author-avatar {% if p.is_anonymous %}anon{% endif %}">
+            {% if p.is_anonymous %}?{% else %}{{ p.author.full_name[0] }}{% endif %}
+          </div>
+          <span class="post-author-name">
+            {% if p.is_anonymous %}Anonymous{% else %}{{ p.author.full_name }}{% endif %}
+          </span>
+        </div>
+
+        <!-- Title + Preview -->
+        <div class="post-title">{{ p.title }}</div>
+        <div class="post-preview">{{ p.content }}</div>
+
+        <!-- Footer stats -->
+        <div class="post-footer">
+          <span class="post-stat replies">
+            <i class="fa-solid fa-comments"></i>
+            {{ p.replies|length }} {{ 'reply' if p.replies|length == 1 else 'replies' }}
+          </span>
+          <span class="post-stat likes">
+            <i class="fa-solid fa-heart"></i>
+            {{ p.likes }} likes
+          </span>
+          <span class="read-more">
+            Read more <i class="fa-solid fa-arrow-right" style="font-size:0.6rem;"></i>
+          </span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="forum-empty">
+      <div class="forum-empty-icon"><i class="fa-solid fa-comments"></i></div>
+      <h3>No Posts Yet</h3>
+      <p>
+        {% if category != 'all' %}
+        No posts in this category yet. Be the first to start a conversation!
+        {% else %}
+        The forum is empty. Start the conversation and support your peers!
+        {% endif %}
+      </p>
+      <a href="{{ url_for('new_post') }}" class="btn btn-primary">
+        <i class="fa-solid fa-pen-to-square"></i> Create First Post
+      </a>
+    </div>
+    {% endif %}
+
   </div>
-  <a href="{{ url_for('new_post') }}" class="btn btn-primary"><i class="fa-solid fa-pen-to-square"></i> New Post</a>
-</div>
 
-<!-- CATEGORY FILTERS -->
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;">
-  <a href="{{ url_for('forum') }}" class="category-pill {% if category=='all' %}active{% endif %}">All</a>
-  {% for cat in ['mental-health','academic','relationships','wellness','general','question'] %}
-  <a href="{{ url_for('forum', category=cat) }}" class="category-pill {% if category==cat %}active{% endif %}">
-    {{ {'mental-health':'🧠 Mental Health','academic':'📚 Academic','relationships':'💞 Relationships','wellness':'💪 Wellness','general':'💬 General','question':'❓ Question'}[cat] }}
-  </a>
-  {% endfor %}
-</div>
+  <!-- ══ RIGHT: SIDEBAR ══ -->
+  <div class="forum-sidebar">
 
-<!-- POSTS -->
-{% if posts %}
-<div style="display:flex;flex-direction:column;gap:1rem;">
-  {% for p in posts %}
-  <a href="{{ url_for('view_post', post_id=p.id) }}" class="post-card">
-    <div class="post-meta">
-      {% if p.is_pinned %}<span class="pinned-badge">📌 Pinned</span>{% endif %}
-      <span class="badge badge-student">{{ p.category|replace('-',' ')|title if p.category else 'General' }}</span>
-      <span>{{ 'Anonymous' if p.is_anonymous else p.author.full_name }}</span>
-      <span>•</span>
-      <span>{{ p.timestamp.strftime('%d %b %Y') }}</span>
+    <!-- Post CTA -->
+    <div class="cta-post-card">
+      <h4>Share Your Story</h4>
+      <p>Your experience could help someone else feel less alone today.</p>
+      <a href="{{ url_for('new_post') }}" class="btn-post">
+        <i class="fa-solid fa-pen-to-square"></i> Create a Post
+      </a>
     </div>
-    <div class="post-title">{{ p.title }}</div>
-    <div class="post-preview">{{ p.content }}</div>
-    <div class="post-footer">
-      <span><i class="fa-solid fa-comments"></i> {{ p.replies|length }} replies</span>
-      <span><i class="fa-solid fa-heart"></i> {{ p.likes }} likes</span>
+
+    <!-- Community Stats -->
+    <div class="sb-card">
+      <div class="sb-title"><i class="fa-solid fa-chart-bar"></i> Community</div>
+      <div class="comm-stats">
+        <div class="comm-stat">
+          <div class="comm-stat-num">{{ posts|length }}</div>
+          <div class="comm-stat-lbl">Total Posts</div>
+        </div>
+        <div class="comm-stat">
+          <div class="comm-stat-num">{{ posts|sum(attribute='likes') if posts else 0 }}</div>
+          <div class="comm-stat-lbl">Total Likes</div>
+        </div>
+        <div class="comm-stat">
+          <div class="comm-stat-num">{{ posts|selectattr('is_anonymous')|list|length if posts else 0 }}</div>
+          <div class="comm-stat-lbl">Anonymous</div>
+        </div>
+        <div class="comm-stat">
+          <div class="comm-stat-num">{{ posts|selectattr('is_pinned')|list|length if posts else 0 }}</div>
+          <div class="comm-stat-lbl">Pinned</div>
+        </div>
+      </div>
     </div>
-  </a>
-  {% endfor %}
+
+    <!-- Browse Categories -->
+    <div class="sb-card">
+      <div class="sb-title"><i class="fa-solid fa-folder-open"></i> Categories</div>
+      {% set cat_colors = {
+        'mental-health':'#7c3aed',
+        'academic':     '#1d4ed8',
+        'relationships':'#be185d',
+        'wellness':     '#059669',
+        'general':      '#64748b',
+        'question':     '#c2410c'
+      } %}
+      {% for cat, color in cat_colors.items() %}
+      {% set cat_posts = posts|selectattr('category','equalto',cat)|list if posts else [] %}
+      <a href="{{ url_for('forum', category=cat) }}" class="cat-list-item">
+        <div class="cli-left">
+          <div class="cli-dot" style="background:{{ color }};"></div>
+          <span class="cli-name">{{ cat|replace('-',' ')|title }}</span>
+        </div>
+        <span class="cli-count">{{ cat_posts|length }}</span>
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Forum Rules -->
+    <div class="sb-card">
+      <div class="sb-title"><i class="fa-solid fa-shield-halved"></i> Community Rules</div>
+      <div class="rule-item"><i class="fa-solid fa-circle-dot"></i> Be kind and respectful to all members</div>
+      <div class="rule-item"><i class="fa-solid fa-circle-dot"></i> You can post anonymously for privacy</div>
+      <div class="rule-item"><i class="fa-solid fa-circle-dot"></i> No personal attacks or bullying</div>
+      <div class="rule-item"><i class="fa-solid fa-circle-dot"></i> Seek professional help for urgent issues</div>
+      <div class="rule-item"><i class="fa-solid fa-circle-dot"></i> Content is moderated by counsellors</div>
+    </div>
+
+    <!-- Crisis box -->
+    <div style="background:#fff5f5;border:1.5px solid #fecaca;border-radius:14px;padding:1.2rem;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
+        <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;font-size:0.82rem;"></i>
+        <span style="font-size:0.76rem;font-weight:700;color:#991b1b;">In Crisis?</span>
+      </div>
+      <p style="font-size:0.72rem;color:#991b1b;line-height:1.5;margin-bottom:10px;">
+        Don't wait for a post reply. Get immediate help from our crisis line or send an SOS alert.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <a href="{{ url_for('sos') }}" style="display:flex;align-items:center;gap:6px;padding:7px 12px;background:#dc2626;color:white;border-radius:8px;text-decoration:none;font-size:0.74rem;font-weight:700;justify-content:center;">
+          <i class="fa-solid fa-circle-exclamation"></i> Send SOS Alert
+        </a>
+        <a href="{{ url_for('crisis') }}" style="display:flex;align-items:center;gap:6px;padding:7px 12px;background:white;color:#dc2626;border:1.5px solid #fca5a5;border-radius:8px;text-decoration:none;font-size:0.74rem;font-weight:600;justify-content:center;">
+          <i class="fa-solid fa-phone-volume"></i> Crisis Hotlines
+        </a>
+      </div>
+    </div>
+
+  </div>
 </div>
-{% else %}
-<div class="empty-state card">
-  <i class="fa-solid fa-comments"></i>
-  <p>No posts yet in this category. <a href="{{ url_for('new_post') }}">Be the first to post!</a></p>
-</div>
-{% endif %}
 {% endblock %}
