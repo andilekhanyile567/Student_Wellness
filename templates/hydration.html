@@ -1,0 +1,645 @@
+{% extends "base.html" %}
+
+{% block title %}Hydration Tracker - DUT Wellness{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Professional Business Styling */
+    .page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .page-header h1 {
+        font-size: 1.875rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-header p {
+        color: #6b7280;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+    
+    /* Hydration Summary Card */
+    .hydration-summary {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+    
+    .summary-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .hydration-stats {
+        text-align: center;
+    }
+    
+    .hydration-amount {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #3b82f6;
+        margin-bottom: 0.5rem;
+    }
+    
+    .hydration-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 1rem;
+    }
+    
+    .progress-container {
+        margin: 1.5rem 0;
+    }
+    
+    .progress-bar-bg {
+        background: #e5e7eb;
+        border-radius: 1rem;
+        height: 0.75rem;
+        overflow: hidden;
+    }
+    
+    .progress-bar-fill {
+        background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+        height: 100%;
+        border-radius: 1rem;
+        transition: width 0.5s ease;
+    }
+    
+    .progress-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        color: #9ca3af;
+    }
+    
+    .goal-text {
+        margin-top: 1rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+    
+    .goal-text strong {
+        color: #3b82f6;
+        font-weight: 600;
+    }
+    
+    /* Quick Add Buttons */
+    .quick-add-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .quick-add-btn {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .quick-add-btn:hover {
+        border-color: #3b82f6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .quick-add-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .quick-add-amount {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .quick-add-custom {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border: none;
+    }
+    
+    .quick-add-custom .quick-add-amount {
+        color: white;
+    }
+    
+    /* Logs Section */
+    .logs-section {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    
+    /* Log Entry Cards */
+    .log-entry {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .log-entry:hover {
+        background: #ffffff;
+        border-color: #3b82f6;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .log-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+    }
+    
+    .log-icon {
+        font-size: 1.25rem;
+    }
+    
+    .log-details {
+        flex: 1;
+    }
+    
+    .log-amount {
+        font-weight: 600;
+        color: #3b82f6;
+        font-size: 1rem;
+    }
+    
+    .log-notes {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+    
+    .log-time {
+        font-size: 0.7rem;
+        color: #9ca3af;
+        white-space: nowrap;
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: #ffffff;
+        border-radius: 1rem;
+        max-width: 450px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #111827;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #9ca3af;
+        transition: color 0.2s;
+    }
+    
+    .modal-close:hover {
+        color: #374151;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-label .required {
+        color: #ef4444;
+    }
+    
+    .form-input, .form-textarea {
+        width: 100%;
+        padding: 0.625rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+    
+    .form-input:focus, .form-textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    .modal-footer {
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+    
+    /* Button Styles */
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        padding: 0.625rem 1.25rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-state-text {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    /* Toast Notification */
+    .toast {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: #10b981;
+        color: white;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 1100;
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .quick-add-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        
+        .page-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .log-entry {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .log-time {
+            align-self: flex-end;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1>Hydration Tracker</h1>
+                <p>Stay hydrated throughout the day for optimal health and wellness</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hydration Summary -->
+    <div class="hydration-summary">
+        <div class="summary-title">
+            <i class="fas fa-tint" style="color: #3b82f6;"></i>
+            Today's Hydration Status
+        </div>
+        <div class="hydration-stats">
+            <div class="hydration-amount">
+                <span id="totalMl">0</span> ml
+            </div>
+            <div class="hydration-label">total consumed today</div>
+            
+            <div class="progress-container">
+                <div class="progress-bar-bg">
+                    <div id="hydrationProgress" class="progress-bar-fill" style="width: 0%"></div>
+                </div>
+                <div class="progress-labels">
+                    <span>0 ml</span>
+                    <span>Goal: 2000 ml</span>
+                </div>
+            </div>
+            
+            <div class="goal-text">
+                <i class="fas fa-bullseye" style="color: #3b82f6;"></i>
+                Daily goal: <strong>2000 ml</strong>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Add Buttons -->
+    <div class="quick-add-grid">
+        <button onclick="quickAdd(250)" class="quick-add-btn">
+            <div class="quick-add-icon">🥤</div>
+            <div class="quick-add-amount">250 ml</div>
+        </button>
+        <button onclick="quickAdd(500)" class="quick-add-btn">
+            <div class="quick-add-icon">🍶</div>
+            <div class="quick-add-amount">500 ml</div>
+        </button>
+        <button onclick="quickAdd(750)" class="quick-add-btn">
+            <div class="quick-add-icon">🧴</div>
+            <div class="quick-add-amount">750 ml</div>
+        </button>
+        <button onclick="openCustomModal()" class="quick-add-btn quick-add-custom">
+            <div class="quick-add-icon">➕</div>
+            <div class="quick-add-amount">Custom</div>
+        </button>
+    </div>
+    
+    <!-- Today's Logs -->
+    <div class="logs-section">
+        <div class="section-title">
+            <i class="fas fa-list-ul" style="color: #3b82f6;"></i>
+            Today's Hydration Logs
+        </div>
+        <div id="logsList">
+            <!-- Logs will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Custom Amount Modal -->
+<div id="customModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add Custom Amount</h3>
+            <button onclick="closeCustomModal()" class="modal-close">&times;</button>
+        </div>
+        
+        <form id="customForm">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Amount <span class="required">*</span></label>
+                    <input type="number" id="customAmount" required min="1" max="2000" 
+                           placeholder="Enter amount in ml" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Notes (optional)</label>
+                    <textarea id="customNotes" rows="2" 
+                              placeholder="e.g., After workout, With lunch, etc." 
+                              class="form-textarea"></textarea>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" onclick="closeCustomModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Add Water
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function loadHydration() {
+    fetch('/api/hydration')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalMl').textContent = data.total_ml;
+            const percentage = (data.total_ml / 2000) * 100;
+            document.getElementById('hydrationProgress').style.width = Math.min(percentage, 100) + '%';
+            
+            const logsList = document.getElementById('logsList');
+            if (data.logs.length === 0) {
+                logsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💧</div>
+                        <div class="empty-state-text">No water logged today. Start by adding your first glass!</div>
+                    </div>
+                `;
+            } else {
+                logsList.innerHTML = data.logs.map(log => `
+                    <div class="log-entry">
+                        <div class="log-info">
+                            <div class="log-icon">💧</div>
+                            <div class="log-details">
+                                <div class="log-amount">${log.amount_ml} ml</div>
+                                ${log.notes ? `<div class="log-notes">${escapeHtml(log.notes)}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="log-time">
+                            <i class="far fa-clock"></i> ${log.time}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function quickAdd(amount) {
+    addHydration(amount, '');
+}
+
+function addHydration(amount, notes) {
+    fetch('/api/hydration', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({amount_ml: amount, notes: notes})
+    })
+    .then(response => response.json())
+    .then(data => {
+        const pointsEarned = Math.floor(amount / 250);
+        showToast(`Added ${amount}ml of water! +${pointsEarned} point${pointsEarned > 1 ? 's' : ''}`, 'success');
+        loadHydration();
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+document.getElementById('customForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const amount = parseInt(document.getElementById('customAmount').value);
+    const notes = document.getElementById('customNotes').value;
+    
+    if (amount > 0 && amount <= 2000) {
+        addHydration(amount, notes);
+        closeCustomModal();
+        document.getElementById('customForm').reset();
+    } else if (amount > 2000) {
+        showToast('Amount cannot exceed 2000ml per entry', 'error');
+    } else {
+        showToast('Please enter a valid amount', 'error');
+    }
+});
+
+function openCustomModal() {
+    document.getElementById('customModal').classList.add('active');
+}
+
+function closeCustomModal() {
+    document.getElementById('customModal').classList.remove('active');
+    document.getElementById('customForm').reset();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', loadHydration);
+</script>
+{% endblock %}

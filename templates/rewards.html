@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rewards — Student Wellness Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --border2: #cbd5e1;
+    --accent: #4f7ef8;
+    --accent2: #e8527a;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --text: #1e293b;
+    --muted: #64748b;
+    --danger: #ef4444;
+    --success: #10b981;
+    --gold: #d97706;
+    --gold-light: #fef3c7;
+    --gold-border: #fde68a;
+    --radius: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --font-head: 'DM Serif Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 15px; min-height: 100vh; }
+
+  header {
+    background: #ffffff; border-bottom: 1px solid var(--border);
+    padding: 0 32px; display: flex; align-items: center;
+    justify-content: space-between; height: 64px;
+    box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: var(--font-head); font-size: 22px; color: var(--gold); }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: none; border: 1px solid var(--border2); color: var(--muted);
+    border-radius: 8px; padding: 7px 14px; font-family: var(--font-body);
+    font-size: 13px; cursor: pointer; text-decoration: none; transition: all 0.2s;
+  }
+  .back-btn:hover { border-color: var(--accent); color: var(--accent); background: #f0f5ff; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 36px 32px; }
+  @media(max-width:700px) { main { padding: 20px 16px; } header { padding: 0 16px; } }
+
+  .page-title { font-family: var(--font-head); font-size: 34px; color: var(--text); margin-bottom: 4px; }
+  .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+
+  .tabs {
+    display: flex; gap: 4px; border-bottom: 2px solid var(--border);
+    margin-bottom: 28px; background: #fff; padding: 0 4px;
+  }
+  .tab {
+    padding: 13px 22px; border: none; background: none; color: var(--muted);
+    cursor: pointer; font-family: var(--font-body); font-size: 14px; font-weight: 500;
+    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); font-weight: 600; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media(max-width:900px) { .grid-4 { grid-template-columns: repeat(2,1fr); } }
+  @media(max-width:700px) { .grid-2, .grid-4 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-family: var(--font-head); font-size: 19px; color: var(--text);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  .card-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+  /* HERO */
+  .hero-card {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef9ee 60%, #fff7ed 100%);
+    border: 1px solid var(--gold-border); border-radius: 20px; padding: 32px;
+    margin-bottom: 24px; box-shadow: 0 4px 20px rgba(217,119,6,0.1);
+    position: relative; overflow: hidden;
+  }
+  .hero-card::before {
+    content:''; position: absolute; top:-80px; right:-80px;
+    width:260px; height:260px; border-radius:50%;
+    background: radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  .hero-left { display: flex; align-items: center; gap: 16px; }
+  .level-orb {
+    width: 76px; height: 76px; border-radius: 50%;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 2px solid var(--gold-border); display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(217,119,6,0.2);
+  }
+  .level-num { font-family: var(--font-head); font-size: 32px; color: var(--gold); line-height: 1; text-align: center; }
+  .level-lbl { font-size: 10px; color: #92400e; text-transform: uppercase; letter-spacing: 0.8px; text-align: center; }
+  .hero-text h2 { font-family: var(--font-head); font-size: 28px; color: #92400e; }
+  .hero-text p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .hero-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  .hero-xp-big { font-family: var(--font-head); font-size: 30px; color: var(--gold); }
+  .hero-xp-sub { font-size: 12px; color: var(--muted); text-align: right; }
+
+  .xp-bar-wrap { margin-top: 22px; }
+  .xp-bar-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 7px; font-weight: 500; }
+  .xp-track { background: #fde68a; border-radius: 99px; height: 12px; overflow: hidden; }
+  .xp-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, #d97706, #f59e0b);
+    transition: width 1s ease; position: relative; overflow: hidden;
+  }
+  .xp-fill::after {
+    content:''; position: absolute; top:0; right:0; bottom:0; width:40px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+    animation: shimmer 2s infinite;
+  }
+  @keyframes shimmer { 0%,100%{opacity:0} 50%{opacity:1} }
+
+  .checkin-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff;
+    border: none; border-radius: 10px; padding: 11px 20px;
+    font-family: var(--font-body); font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(217,119,6,0.3); white-space: nowrap;
+  }
+  .checkin-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(217,119,6,0.4); }
+  .checkin-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* STREAKS */
+  .streak-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; text-align: center; box-shadow: var(--shadow); transition: all 0.2s;
+  }
+  .streak-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .streak-icon { font-size: 26px; margin-bottom: 6px; display: block; }
+  .streak-num { font-family: var(--font-head); font-size: 36px; line-height: 1; }
+  .streak-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; margin-top: 4px; font-weight: 600; }
+  .streak-sub { font-size: 11px; color: #94a3b8; margin-top: 5px; }
+  @keyframes fire { from{transform:scale(1)} to{transform:scale(1.18)} }
+  .streak-fire { animation: fire 1.2s ease-in-out infinite alternate; }
+
+  /* PROGRESS ROWS */
+  .progress-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .progress-row:last-child { border-bottom: none; }
+  .prog-icon { font-size: 20px; width: 32px; text-align: center; flex-shrink: 0; }
+  .prog-label { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .prog-track { background: #f1f5f9; border-radius: 99px; height: 8px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+  .prog-val { font-size: 12px; min-width: 48px; text-align: right; font-weight: 600; flex-shrink: 0; }
+
+  /* BADGES */
+  .badge-summary {
+    display: flex; align-items: center; gap: 20px;
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 22px; margin-bottom: 20px; box-shadow: var(--shadow);
+  }
+  .bs-val { font-family: var(--font-head); font-size: 24px; color: var(--gold); }
+  .bs-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+  .bs-divider { width: 1px; height: 36px; background: var(--border); }
+
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .filter-pill {
+    padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2);
+    background: #fff; color: var(--muted); cursor: pointer; font-size: 13px;
+    font-family: var(--font-body); transition: all 0.15s; box-shadow: var(--shadow);
+  }
+  .filter-pill:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
+  .filter-pill.active { border-color: var(--gold); color: var(--gold); background: var(--gold-light); font-weight: 600; }
+
+  .badge-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 14px; text-align: center; box-shadow: var(--shadow);
+    transition: all 0.2s; position: relative;
+  }
+  .badge-card.earned { border-color: var(--gold-border); background: linear-gradient(135deg, #fffbeb, #fff); }
+  .badge-card.earned:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(217,119,6,0.15); }
+  .badge-card.locked { opacity: 0.45; background: #f8fafc; }
+  .badge-emoji { font-size: 30px; margin-bottom: 10px; display: block; }
+  .badge-card.locked .badge-emoji { filter: grayscale(1); }
+  .badge-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .badge-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .badge-xp {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: var(--gold-light); color: var(--gold); border-radius: 20px;
+    padding: 2px 9px; font-size: 11px; font-weight: 600; margin-top: 8px;
+    border: 1px solid var(--gold-border);
+  }
+  .earned-tick {
+    position: absolute; top: 8px; right: 8px; width: 18px; height: 18px;
+    border-radius: 50%; background: #dcfce7; border: 1px solid #86efac;
+    display: flex; align-items: center; justify-content: center; font-size: 10px; color: #16a34a;
+  }
+
+  /* CHALLENGES */
+  .challenge-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; box-shadow: var(--shadow); transition: all 0.2s;
+  }
+  .challenge-card:hover { box-shadow: var(--shadow-md); }
+  .challenge-card.completed { border-color: #86efac; background: linear-gradient(135deg, #f0fdf4, #fff); }
+  .ch-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .ch-icon {
+    width: 46px; height: 46px; border-radius: 10px; background: #eff6ff;
+    border: 1px solid #bfdbfe; display: flex; align-items: center;
+    justify-content: center; font-size: 22px; flex-shrink: 0;
+  }
+  .challenge-card.completed .ch-icon { background: #f0fdf4; border-color: #86efac; }
+  .ch-name { font-weight: 600; font-size: 15px; color: var(--text); }
+  .ch-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ch-xp {
+    margin-left: auto; background: var(--gold-light); color: var(--gold);
+    border-radius: 20px; padding: 3px 11px; font-size: 12px; font-weight: 600;
+    border: 1px solid var(--gold-border); flex-shrink: 0;
+  }
+  .ch-track { background: #f1f5f9; border-radius: 99px; height: 8px; overflow: hidden; }
+  .ch-bar { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+  .ch-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .ch-done { display: flex; align-items: center; gap: 6px; color: #16a34a; font-size: 13px; font-weight: 500; margin-top: 8px; }
+
+  /* RECENT BADGES */
+  .rbi {
+    display: flex; align-items: center; gap: 12px; background: #fffbeb;
+    border: 1px solid var(--gold-border); border-radius: 10px;
+    padding: 10px 14px; flex: 1; min-width: 180px;
+  }
+  .rbi-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .rbi-desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .rbi-xp { margin-left: auto; color: var(--gold); font-size: 12px; font-weight: 600; flex-shrink: 0; }
+
+  /* ACTIVE CHALLENGE PREVIEW */
+  .ach-item { padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .ach-item:last-child { border-bottom: none; }
+  .ach-track { background: #f1f5f9; border-radius: 99px; height: 6px; overflow: hidden; margin-top: 5px; }
+  .ach-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.6s; }
+
+  /* TOAST */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px; background: #fff;
+    border: 1px solid var(--gold-border); color: var(--gold); border-radius: 10px;
+    padding: 12px 20px; font-size: 14px; transform: translateY(80px); opacity: 0;
+    transition: all 0.35s; z-index: 999; display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-state .ei { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🏆 Rewards</div>
+  <a href="/" class="back-btn">&#8592; Back to Dashboard</a>
+</header>
+
+<main>
+  <div class="page-title">Your Wellness Rewards</div>
+  <div class="page-sub">Earn XP, unlock badges, and complete challenges by staying consistent with your health goals</div>
+
+  <!-- HERO CARD -->
+  <div class="hero-card">
+    <div class="hero-top">
+      <div class="hero-left">
+        <div class="level-orb">
+          <div>
+            <div class="level-num" id="hero-level">1</div>
+            <div class="level-lbl">Level</div>
+          </div>
+        </div>
+        <div class="hero-text">
+          <h2 id="hero-title">Wellness Seedling</h2>
+          <p id="hero-sub">Keep logging to level up and unlock rewards!</p>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div>
+          <div class="hero-xp-big"><span id="hero-xp">0</span> XP</div>
+          <div class="hero-xp-sub">total experience points</div>
+        </div>
+        <button class="checkin-btn" id="checkin-btn" onclick="claimCheckin()">&#9728;&#65039; Daily Check-in &nbsp;+20 XP</button>
+      </div>
+    </div>
+    <div class="xp-bar-wrap">
+      <div class="xp-bar-labels">
+        <span id="xp-cur">0 XP in this level</span>
+        <span id="xp-next">150 XP to next level</span>
+      </div>
+      <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview',this)">&#128202; Overview</button>
+    <button class="tab" onclick="switchTab('badges',this)">&#127medals; Badges</button>
+    <button class="tab" onclick="switchTab('challenges',this)">&#127919; Challenges</button>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div id="tab-overview" class="tab-panel active">
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <div class="card-title"><div class="card-icon" style="background:#fff7ed">&#128293;</div>Active Streaks</div>
+        <div class="grid-2" id="streak-grid"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="card-icon" style="background:#eff6ff">&#128200;</div>Your Progress</div>
+        <div id="progress-overview"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title"><div class="card-icon" style="background:#fffbeb">&#11088;</div>Recently Earned</div>
+      <div id="recent-badges"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-icon" style="background:#f0fdf4">&#127919;</div>Active Challenges</div>
+      <div id="active-challenges-preview"></div>
+    </div>
+  </div>
+
+  <!-- BADGES TAB -->
+  <div id="tab-badges" class="tab-panel">
+    <div class="badge-summary">
+      <div><div class="bs-val" id="bs-earned">0</div><div class="bs-label">Earned</div></div>
+      <div class="bs-divider"></div>
+      <div><div class="bs-val" id="bs-locked" style="color:var(--muted)">0</div><div class="bs-label">Locked</div></div>
+      <div class="bs-divider"></div>
+      <div><div class="bs-val" id="bs-pct" style="color:var(--accent3)">0%</div><div class="bs-label">Complete</div></div>
+    </div>
+    <div class="filter-row">
+      <button class="filter-pill active" onclick="filterBadges('all',this)">All</button>
+      <button class="filter-pill" onclick="filterBadges('hydration',this)">&#128167; Hydration</button>
+      <button class="filter-pill" onclick="filterBadges('sleep',this)">&#128564; Sleep</button>
+      <button class="filter-pill" onclick="filterBadges('exercise',this)">&#127947; Exercise</button>
+      <button class="filter-pill" onclick="filterBadges('medication',this)">&#128138; Medication</button>
+      <button class="filter-pill" onclick="filterBadges('nutrition',this)">&#127822; Nutrition</button>
+      <button class="filter-pill" onclick="filterBadges('general',this)">&#127775; General</button>
+    </div>
+    <div class="grid-4" id="badge-grid"></div>
+  </div>
+
+  <!-- CHALLENGES TAB -->
+  <div id="tab-challenges" class="tab-panel">
+    <p class="section-sub">Complete challenges to earn bonus XP. Progress auto-calculates from your tracker data — just keep logging!</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="challenges-grid"></div>
+  </div>
+
+</main>
+
+<div id="toast">&#127881; <span id="toast-msg"></span></div>
+
+<script>
+let rewardsData = null;
+
+const LEVEL_TITLES = [
+  '', 'Wellness Seedling', 'Health Explorer', 'Vitality Scout',
+  'Wellness Achiever', 'Health Champion', 'Vitality Guardian',
+  'Wellness Master', 'Health Legend', 'Vitality Elite', 'Wellness God'
+];
+
+function getLevelTitle(lvl) {
+  return LEVEL_TITLES[Math.min(lvl, LEVEL_TITLES.length - 1)] || ('Level ' + lvl + ' Hero');
+}
+
+function showToast(msg) {
+  document.getElementById('toast-msg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3400);
+}
+
+async function api(url, method, body) {
+  method = method || 'GET';
+  const opts = { method: method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  return (await fetch(url, opts)).json();
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+async function loadRewards() {
+  rewardsData = await api('/api/rewards');
+  const r = rewardsData;
+
+  document.getElementById('hero-level').textContent = r.level;
+  document.getElementById('hero-title').textContent = getLevelTitle(r.level);
+  document.getElementById('hero-sub').textContent = r.badges_earned_count + ' of ' + r.total_badges + ' badges earned';
+  document.getElementById('hero-xp').textContent = r.xp;
+  document.getElementById('xp-cur').textContent = r.xp_in_level + ' XP in this level';
+  document.getElementById('xp-next').textContent = (r.xp_needed - r.xp_in_level) + ' XP to Level ' + (r.level + 1);
+  const pct = Math.min(100, Math.round((r.xp_in_level / r.xp_needed) * 100));
+  document.getElementById('xp-fill').style.width = pct + '%';
+
+  renderStreaks(r.streaks);
+  renderProgress(r);
+  renderRecentBadges(r.badges);
+  renderChallengesPreview(r.challenges);
+  renderBadges(r.badges, 'all');
+  document.getElementById('bs-earned').textContent = r.badges_earned_count;
+  document.getElementById('bs-locked').textContent = r.total_badges - r.badges_earned_count;
+  document.getElementById('bs-pct').textContent = Math.round((r.badges_earned_count / r.total_badges) * 100) + '%';
+  renderChallenges(r.challenges);
+}
+
+function renderStreaks(streaks) {
+  const items = [
+    { key:'hydration', icon:'&#128167;', label:'Hydration', color:'#0891b2', tip:'days at 2000ml' },
+    { key:'sleep',     icon:'&#128564;', label:'Sleep',     color:'#7c3aed', tip:'nights 7+ hrs' },
+    { key:'exercise',  icon:'&#127939;', label:'Exercise',  color:'#059669', tip:'workout days' },
+    { key:'medication',icon:'&#128138;', label:'Meds',      color:'#dc2626', tip:'days on time' },
+  ];
+  document.getElementById('streak-grid').innerHTML = items.map(function(i) {
+    const val = streaks[i.key] || 0;
+    const isHot = val >= 3;
+    return '<div class="streak-card">' +
+      '<span class="streak-icon ' + (isHot ? 'streak-fire' : '') + '">' + (isHot ? '&#128293;' : i.icon) + '</span>' +
+      '<div class="streak-num" style="color:' + i.color + '">' + val + '</div>' +
+      '<div class="streak-label">' + i.label + '</div>' +
+      '<div class="streak-sub">' + i.tip + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+function renderProgress(r) {
+  const chDone = r.challenges.filter(function(c){ return c.completed; }).length;
+  const streakVals = Object.values(r.streaks);
+  const bestStreak = streakVals.length ? Math.max.apply(null, streakVals) : 0;
+  const items = [
+    { icon:'&#127869;', label:'Badges collected',  val: r.badges_earned_count, max: r.total_badges,      color:'#d97706' },
+    { icon:'&#127919;', label:'Challenges done',   val: chDone,                max: r.challenges.length, color:'#10b981' },
+    { icon:'&#128293;', label:'Best streak',        val: bestStreak,            max: 30,                  color:'#ef4444' },
+  ];
+  document.getElementById('progress-overview').innerHTML = items.map(function(i) {
+    const pct = i.max > 0 ? Math.min(100, Math.round((i.val / i.max) * 100)) : 0;
+    return '<div class="progress-row">' +
+      '<div class="prog-icon">' + i.icon + '</div>' +
+      '<div style="flex:1"><div class="prog-label">' + i.label + '</div>' +
+      '<div class="prog-track"><div class="prog-fill" style="width:' + pct + '%;background:' + i.color + '"></div></div></div>' +
+      '<div class="prog-val" style="color:' + i.color + '">' + i.val + '/' + i.max + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+function renderRecentBadges(badges) {
+  const earned = badges.filter(function(b){ return b.earned; });
+  const el = document.getElementById('recent-badges');
+  if (!earned.length) {
+    el.innerHTML = '<div class="empty-state"><div class="ei">&#127869;</div><p>No badges yet — start logging to earn your first!</p></div>';
+    return;
+  }
+  el.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:10px">' +
+    earned.slice(-5).reverse().map(function(b) {
+      return '<div class="rbi">' +
+        '<span style="font-size:24px">' + b.icon + '</span>' +
+        '<div><div class="rbi-name">' + b.name + '</div><div class="rbi-desc">' + b.desc + '</div></div>' +
+        '<div class="rbi-xp">+' + b.xp + ' XP</div></div>';
+    }).join('') + '</div>';
+}
+
+function renderChallengesPreview(challenges) {
+  const active = challenges.filter(function(c){ return !c.completed; }).slice(0, 3);
+  const el = document.getElementById('active-challenges-preview');
+  if (!active.length) {
+    el.innerHTML = '<div style="color:#16a34a;font-size:14px;padding:8px 0;font-weight:500">&#127881; All challenges completed — fantastic work!</div>';
+    return;
+  }
+  el.innerHTML = active.map(function(c) {
+    const pct = Math.round((c.progress / c.target) * 100);
+    return '<div class="ach-item">' +
+      '<span style="font-size:22px">' + c.icon + '</span>' +
+      '<div style="flex:1"><div style="font-size:14px;font-weight:500">' + c.name + '</div>' +
+      '<div class="ach-track"><div class="ach-fill" style="width:' + pct + '%"></div></div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:3px"><span>' + c.desc + '</span><span>' + c.progress + '/' + c.target + '</span></div></div>' +
+      '<div style="color:var(--gold);font-size:12px;font-weight:600;flex-shrink:0">+' + c.xp + ' XP</div></div>';
+  }).join('');
+}
+
+var badgeFilter = 'all';
+function filterBadges(cat, btn) {
+  badgeFilter = cat;
+  document.querySelectorAll('.filter-pill').forEach(function(p){ p.classList.remove('active'); });
+  btn.classList.add('active');
+  if (rewardsData) renderBadges(rewardsData.badges, cat);
+}
+
+function renderBadges(badges, filter) {
+  const list = filter === 'all' ? badges : badges.filter(function(b){ return b.category === filter; });
+  const el = document.getElementById('badge-grid');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="ei">&#127869;</div><p>No badges in this category yet</p></div>';
+    return;
+  }
+  const sorted = list.slice().sort(function(a, b){ return (b.earned ? 1 : 0) - (a.earned ? 1 : 0); });
+  el.innerHTML = sorted.map(function(b) {
+    return '<div class="badge-card ' + (b.earned ? 'earned' : 'locked') + '">' +
+      (b.earned ? '<div class="earned-tick">&#10003;</div>' : '') +
+      '<div class="badge-emoji">' + b.icon + '</div>' +
+      '<div class="badge-name">' + b.name + '</div>' +
+      '<div class="badge-desc">' + b.desc + '</div>' +
+      '<div class="badge-xp">&#11088; ' + b.xp + ' XP</div></div>';
+  }).join('');
+}
+
+function renderChallenges(challenges) {
+  const el = document.getElementById('challenges-grid');
+  el.innerHTML = challenges.map(function(c) {
+    const pct = Math.min(100, Math.round((c.progress / c.target) * 100));
+    const barColor = c.completed ? '#10b981' : (pct > 60 ? '#f59e0b' : '#4f7ef8');
+    return '<div class="challenge-card ' + (c.completed ? 'completed' : '') + '">' +
+      '<div class="ch-top"><div class="ch-icon">' + c.icon + '</div>' +
+      '<div><div class="ch-name">' + c.name + '</div><div class="ch-desc">' + c.desc + '</div></div>' +
+      '<div class="ch-xp">+' + c.xp + ' XP</div></div>' +
+      (c.completed
+        ? '<div class="ch-done">&#9989; Challenge completed!</div>'
+        : '<div class="ch-track"><div class="ch-bar" style="width:' + pct + '%;background:' + barColor + '"></div></div>' +
+          '<div class="ch-labels"><span>' + c.progress + ' / ' + c.target + '</span><span>' + pct + '%</span></div>'
+      ) + '</div>';
+  }).join('');
+}
+
+async function claimCheckin() {
+  const btn = document.getElementById('checkin-btn');
+  btn.disabled = true;
+  const res = await api('/api/rewards/claim-checkin', 'POST', {});
+  if (res.success) {
+    showToast(res.message);
+    btn.textContent = 'Checked in today!';
+    await loadRewards();
+  } else {
+    showToast('Already checked in today — come back tomorrow!');
+    btn.textContent = 'Already checked in';
+    btn.disabled = true;
+  }
+}
+
+loadRewards();
+</script>
+</body>
+</html>
