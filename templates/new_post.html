@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}New Post – Forum{% endblock %}
+{% block page_title %}Create New Post{% endblock %}
+{% block content %}
+<div style="max-width:620px;">
+  <div class="page-header">
+    <h1>Share with the Community</h1>
+    <p>Your post helps others feel less alone. You can post anonymously.</p>
+  </div>
+  <div class="card">
+    <form method="POST" action="{{ url_for('new_post') }}">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-select">
+          <option value="general">General</option>
+          <option value="mental-health">Mental Health</option>
+          <option value="academic">Academic Stress</option>
+          <option value="relationships">Relationships</option>
+          <option value="wellness">Wellness Tips</option>
+          <option value="question">Question</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Post Title *</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-heading input-icon"></i>
+          <input type="text" name="title" class="form-control" placeholder="What do you want to share?" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Your Message *</label>
+        <textarea name="content" class="form-textarea" rows="6" placeholder="Share your thoughts, experience, or question..." required></textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px;background:#f8f8f8;border-radius:10px;margin-bottom:1rem;">
+        <input type="checkbox" id="anon" name="anonymous" style="accent-color:var(--dut-blue);width:16px;height:16px;">
+        <label for="anon" style="font-size:0.85rem;cursor:pointer;"><i class="fa-solid fa-user-secret"></i> Post anonymously (your name won't be shown)</label>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">
+          <i class="fa-solid fa-paper-plane"></i> Publish Post
+        </button>
+        <a href="{{ url_for('forum') }}" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

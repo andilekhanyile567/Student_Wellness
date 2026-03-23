@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Daily Check-in – DUT Wellness{% endblock %}
+{% block page_title %}Daily Check-in{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Daily Wellness Check-in</h1>
+  <p>Takes less than 2 minutes. Your data is private and secure.</p>
+</div>
+
+<div style="max-width:600px;">
+  <form method="POST" action="{{ url_for('checkin') }}">
+    <!-- Mood -->
+    <div class="card mb-3">
+      <div class="card-title"><i class="fa-solid fa-face-smile-beam"></i> How are you feeling today?</div>
+      <div class="mood-emoji" id="mood-emoji">😐</div>
+      <div class="mood-value" id="mood-value">5</div>
+      <div class="mood-display">
+        <span>😭 Terrible</span><span>😊 Great</span>
+      </div>
+      <input type="range" id="mood-slider" name="mood_score" min="1" max="10" value="5" class="mood-slider">
+      <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:#bbb;">
+        <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+      </div>
+    </div>
+
+    <!-- Stress & Sleep -->
+    <div class="card mb-3">
+      <div class="card-title"><i class="fa-solid fa-brain"></i> Stress & Sleep</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Stress Level (1–10)</label>
+          <select name="stress_level" class="form-select">
+            <option value="">Select...</option>
+            {% for i in range(1,11) %}<option value="{{ i }}">{{ i }} – {% if i<=3 %}Low{% elif i<=6 %}Moderate{% else %}High{% endif %}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sleep Last Night (hours)</label>
+          <select name="sleep_hours" class="form-select">
+            <option value="">Select...</option>
+            <option value="3">Less than 4 hrs</option>
+            <option value="4.5">4–5 hrs</option>
+            <option value="6">5–6 hrs</option>
+            <option value="7">6–7 hrs</option>
+            <option value="8">7–8 hrs ✓</option>
+            <option value="9">8+ hrs</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Physical Activity -->
+    <div class="card mb-3">
+      <div class="card-title"><i class="fa-solid fa-person-running"></i> Physical Activity Today</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        {% for act in ['None','Light walk','Exercise','Sport','Gym','Yoga/Stretch'] %}
+        <label style="display:flex;align-items:center;gap:6px;padding:8px 14px;border:1.5px solid var(--border);border-radius:100px;cursor:pointer;font-size:0.85rem;transition:all 0.2s;">
+          <input type="radio" name="physical_activity" value="{{ act }}" style="accent-color:var(--dut-blue);">
+          {{ act }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="card mb-3">
+      <div class="card-title"><i class="fa-solid fa-pen"></i> Anything on your mind?</div>
+      <textarea name="notes" class="form-textarea" placeholder="Optional – share what's going on (private)..." rows="4"></textarea>
+      <p style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;"><i class="fa-solid fa-lock"></i> This is private and only visible to your counsellor if needed.</p>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block" style="padding:14px;font-size:1rem;">
+      <i class="fa-solid fa-circle-check"></i> Submit Check-in
+    </button>
+    <a href="{{ url_for('student_dashboard') }}" class="btn btn-ghost btn-block mt-1">Cancel</a>
+  </form>
+</div>
+{% endblock %}

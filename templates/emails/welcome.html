@@ -1,0 +1,48 @@
+<!-- WELCOME EMAIL -->
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><style>
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f5f7fa;margin:0;padding:20px;}
+.wrap{max-width:560px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
+.header{background:linear-gradient(135deg,#003087,#0050c8);padding:2.5rem;text-align:center;color:white;}
+.logo{width:56px;height:56px;background:#FFB81C;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:bold;color:#003087;margin-bottom:1rem;}
+.header h1{margin:0;font-size:1.6rem;}
+.header p{margin:6px 0 0;opacity:0.85;font-size:0.9rem;}
+.body{padding:2rem;}
+.body h2{color:#003087;font-size:1.3rem;margin-bottom:0.5rem;}
+.body p{color:#444;line-height:1.6;font-size:0.9rem;margin-bottom:1rem;}
+.info-box{background:#e8f0fa;border-radius:10px;padding:1rem;margin:1rem 0;font-size:0.88rem;color:#003087;}
+.btn{display:inline-block;padding:12px 24px;background:#003087;color:white;text-decoration:none;border-radius:10px;font-weight:600;font-size:0.9rem;margin:0.5rem 0;}
+.footer{background:#f5f7fa;padding:1.5rem;text-align:center;font-size:0.75rem;color:#888;}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="logo">DUT</div>
+    <h1>Welcome to DUT Wellness Centre</h1>
+    <p>Your mental health matters to us</p>
+  </div>
+  <div class="body">
+    <h2>Hi {{ user.full_name.split()[0] }},</h2>
+    <p>Welcome to the DUT Student Wellness Centre portal. Your account has been successfully created.</p>
+    <div class="info-box">
+      <strong>Your Account Details:</strong><br>
+      Student Number: <strong>{{ user.student_number }}</strong><br>
+      Email: {{ user.email }}<br>
+      Role: {{ user.role|title }}
+    </div>
+    <p>You can now:</p>
+    <ul style="color:#444;font-size:0.88rem;line-height:1.8;">
+      <li>📊 Log daily mood check-ins</li>
+      <li>📅 Book counselling sessions</li>
+      <li>💬 Connect with peers on the forum</li>
+      <li>🚨 Send SOS alerts if needed</li>
+      <li>📚 Access wellness resources</li>
+    </ul>
+    <a href="http://localhost:5000/login" class="btn">Login to Your Portal →</a>
+    <p style="font-size:0.8rem;color:#888;margin-top:1.5rem;">If you need immediate help, call our crisis line: <strong>0800-567-567</strong></p>
+  </div>
+  <div class="footer">© DUT Wellness Centre · Durban University of Technology<br>This is an automated email. Please do not reply.</div>
+</div>
+</body>
+</html>

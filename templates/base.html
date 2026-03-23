@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}DUT Wellness Centre{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <style>
+    /* ══════════════════════════════════════════
+       BASE LAYOUT — sidebar + main
+    ══════════════════════════════════════════ */
+    :root {
+      --sidebar-w: 240px;
+      --topbar-h: 58px;
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: rgba(255,255,255,0.06);
+      --sidebar-active-bg: rgba(99,102,241,0.18);
+      --sidebar-active-txt: #a5b4fc;
+      --sidebar-txt: #94a3b8;
+      --sidebar-section: #334155;
+      --accent: #6366f1;
+      --topbar-bg: #ffffff;
+      --content-bg: #f4f5f7;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--content-bg);
+      color: #0f172a;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+    /* ══════════════════════════════════════════
+       SIDEBAR
+    ══════════════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 200;
+      display: flex; flex-direction: column;
+      overflow-y: auto; overflow-x: hidden;
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .sidebar::-webkit-scrollbar { width: 0; }
+
+    /* Logo */
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 1.35rem 1.25rem 1.1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
+    .logo-mark {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem; font-weight: 700; color: white;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+    }
+    .logo-text .logo-main {
+      display: block; color: #f1f5f9;
+      font-size: 0.9rem; font-weight: 700; line-height: 1.2;
+    }
+    .logo-text .logo-sub {
+      display: block; color: #475569;
+      font-size: 0.62rem; letter-spacing: 0.07em; text-transform: uppercase;
+    }
+
+    /* User pill */
+    .sidebar-user {
+      margin: 0.9rem 0.9rem 0.4rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 11px; padding: 0.75rem 1rem;
+      display: flex; align-items: center; gap: 9px;
+      flex-shrink: 0;
+    }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--accent); color: white;
+      font-weight: 700; font-size: 0.82rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .user-info { min-width: 0; }
+    .user-name {
+      display: block; color: #e2e8f0;
+      font-size: 0.8rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .user-role {
+      display: block; font-size: 0.6rem;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-top: 1px;
+    }
+    .badge-student    { color: #818cf8; }
+    .badge-counsellor { color: #7dd3fc; }
+    .badge-admin      { color: #f87171; }
+
+    /* Nav section label */
+    .nav-section {
+      font-size: 0.58rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--sidebar-section);
+      padding: 0.9rem 1.25rem 0.3rem;
+    }
+
+    /* Nav links */
+    .nav-links { list-style: none; padding: 0 0.65rem; flex: 1; }
+    .nav-links li { margin-bottom: 1px; }
+    .nav-links a {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 12px;
+      color: var(--sidebar-txt);
+      text-decoration: none;
+      border-radius: 9px;
+      font-size: 0.8rem; font-weight: 500;
+      transition: all 0.15s;
+    }
+    .nav-links a i { width: 16px; text-align: center; font-size: 0.8rem; flex-shrink: 0; }
+    .nav-links a span { white-space: nowrap; overflow: hidden; }
+    .nav-links a:hover { background: var(--sidebar-hover); color: #e2e8f0; }
+    .nav-links a.active {
+      background: var(--sidebar-active-bg);
+      color: var(--sidebar-active-txt);
+      font-weight: 600;
+      border-left: 3px solid var(--accent);
+      padding-left: 9px;
+    }
+    .nav-links a.active i { color: #818cf8; }
+
+    /* Emergency nav */
+    .nav-emergency a {
+      color: #fca5a5 !important;
+      background: rgba(239,68,68,0.08) !important;
+    }
+    .nav-emergency a:hover { background: rgba(239,68,68,0.16) !important; color: #fecaca !important; }
+    .nav-emergency-alt a {
+      color: #fdba74 !important;
+      background: rgba(245,158,11,0.08) !important;
+    }
+    .nav-emergency-alt a:hover { background: rgba(245,158,11,0.15) !important; color: #fde68a !important; }
+
+    /* Bottom nav item */
+    .nav-bottom {
+      margin-top: auto;
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* ══════════════════════════════════════════
+       MAIN WRAP
+    ══════════════════════════════════════════ */
+    .main-wrap {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex; flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      height: var(--topbar-h);
+      background: var(--topbar-bg);
+      border-bottom: 1px solid #e2e8f0;
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center;
+      padding: 0 1.6rem;
+      gap: 1rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      flex-shrink: 0;
+    }
+    .sidebar-toggle {
+      background: none; border: none; cursor: pointer;
+      color: #64748b; font-size: 1rem; display: none;
+      padding: 4px; border-radius: 6px;
+    }
+    .sidebar-toggle:hover { background: #f1f5f9; }
+    .topbar-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem; font-weight: 600; color: #0f172a; flex: 1;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .topbar-date {
+      font-size: 0.72rem; color: #94a3b8;
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      padding: 5px 12px; border-radius: 20px;
+    }
+    .sos-badge {
+      position: relative; width: 34px; height: 34px;
+      background: #fef2f2; color: #dc2626;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 0.85rem;
+      border: 1px solid #fecaca;
+      transition: all 0.2s;
+    }
+    .sos-badge:hover { background: #fee2e2; }
+    .sos-count {
+      position: absolute; top: -3px; right: -3px;
+      background: #dc2626; color: white;
+      font-size: 0.55rem; font-weight: 800;
+      min-width: 15px; height: 15px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      border: 2px solid white;
+    }
+
+    /* ── Content area ── */
+    .content-area {
+      padding: 1.6rem 1.8rem;
+      flex: 1;
+      max-width: 1400px;
+    }
+
+    /* ── Flash messages ── */
+    .flash-container { margin-bottom: 1rem; }
+    .flash {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 16px; border-radius: 10px;
+      font-size: 0.82rem; font-weight: 500;
+      margin-bottom: 8px;
+      animation: flashIn 0.3s ease;
+    }
+    @keyframes flashIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+    .flash-success { background:#f0fdf4; border:1px solid #86efac; color:#166534; }
+    .flash-danger  { background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; }
+    .flash-info    { background:#eff6ff; border:1px solid #93c5fd; color:#1e40af; }
+    .flash-warning { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
+    .flash-close {
+      background:none; border:none; cursor:pointer;
+      margin-left:auto; opacity:0.5; font-size:1rem; line-height:1;
+    }
+
+    /* Public flash */
+    .public-flash {
+      position: fixed; top: 20px; right: 20px; z-index: 9999;
+      width: 340px;
+    }
+
+    /* ══════════════════════════════════════════
+       PAGE HEADER (used in child templates)
+    ══════════════════════════════════════════ */
+    .page-header { margin-bottom: 1.5rem; }
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.55rem; color: #0f172a; font-weight: 700;
+    }
+    .page-header p { font-size: 0.79rem; color: #64748b; margin-top: 4px; }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.3); }
+      .main-wrap { margin-left: 0; }
+      .sidebar-toggle { display: block; }
+      .content-area { padding: 1.2rem; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+
+  <!-- ════════════════════ SIDEBAR ════════════════════ -->
+  <nav class="sidebar" id="sidebar">
+
+    <div class="sidebar-logo">
+      <div class="logo-mark">W</div>
+      <div class="logo-text">
+        <span class="logo-main">DUT Wellness</span>
+        <span class="logo-sub">Student Portal</span>
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">{{ current_user.full_name[0] }}</div>
+      <div class="user-info">
+        <span class="user-name">{{ current_user.full_name }}</span>
+        <span class="user-role badge-{{ current_user.role }}">{{ current_user.role | title }}</span>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+
+      {% if current_user.role == 'student' %}
+
+        <li><div class="nav-section">Overview</div></li>
+        <li>
+          <a href="{{ url_for('student_dashboard') }}"
+             class="{% if request.endpoint == 'student_dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('checkin') }}"
+             class="{% if request.endpoint == 'checkin' %}active{% endif %}">
+            <i class="fa-solid fa-heart-pulse"></i><span>Daily Check-in</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('checkin_history') }}"
+             class="{% if request.endpoint == 'checkin_history' %}active{% endif %}">
+            <i class="fa-solid fa-chart-line"></i><span>My Progress</span>
+          </a>
+        </li>
+
+        <li><div class="nav-section">Support</div></li>
+        <li>
+          <a href="{{ url_for('forum') }}"
+             class="{% if 'forum' in request.endpoint %}active{% endif %}">
+            <i class="fa-solid fa-comments"></i><span>Peer Forum</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('booking') }}"
+             class="{% if request.endpoint == 'booking' %}active{% endif %}">
+            <i class="fa-solid fa-calendar-check"></i><span>Book Session</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('resources') }}"
+             class="{% if request.endpoint == 'resources' %}active{% endif %}">
+            <i class="fa-solid fa-book-open"></i><span>Resources</span>
+          </a>
+        </li>
+
+        <li><div class="nav-section">Emergency</div></li>
+        <li class="nav-emergency">
+          <a href="{{ url_for('sos') }}">
+            <i class="fa-solid fa-circle-exclamation"></i><span>SOS Alert</span>
+          </a>
+        </li>
+        <li class="nav-emergency-alt">
+          <a href="{{ url_for('crisis') }}">
+            <i class="fa-solid fa-phone-volume"></i><span>Crisis Lines</span>
+          </a>
+        </li>
+
+      {% elif current_user.role == 'counsellor' %}
+
+        <li><div class="nav-section">Overview</div></li>
+        <li>
+          <a href="{{ url_for('counsellor_dashboard') }}"
+             class="{% if request.endpoint == 'counsellor_dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+          </a>
+        </li>
+        <li><div class="nav-section">Tools</div></li>
+        <li><a href="{{ url_for('forum') }}"><i class="fa-solid fa-comments"></i><span>Forum</span></a></li>
+        <li><a href="{{ url_for('resources') }}"><i class="fa-solid fa-book-open"></i><span>Resources</span></a></li>
+        <li><a href="{{ url_for('crisis') }}"><i class="fa-solid fa-phone-volume"></i><span>Crisis Lines</span></a></li>
+
+      {% elif current_user.role == 'admin' %}
+
+        <li><div class="nav-section">Overview</div></li>
+        <li>
+          <a href="{{ url_for('admin_dashboard') }}"
+             class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+          </a>
+        </li>
+        <li><div class="nav-section">Management</div></li>
+        <li><a href="{{ url_for('forum') }}"><i class="fa-solid fa-comments"></i><span>Forum</span></a></li>
+        <li><a href="{{ url_for('resources') }}"><i class="fa-solid fa-book-open"></i><span>Resources</span></a></li>
+
+      {% endif %}
+
+      <li class="nav-bottom">
+        <a href="{{ url_for('profile') }}"
+           class="{% if request.endpoint == 'profile' %}active{% endif %}">
+          <i class="fa-solid fa-user-gear"></i><span>My Profile</span>
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('logout') }}" style="color:#f87171 !important;">
+          <i class="fa-solid fa-right-from-bracket"></i><span>Sign Out</span>
+        </a>
+      </li>
+
+    </ul>
+  </nav>
+
+  <!-- ════════════════════ MAIN ════════════════════ -->
+  <div class="main-wrap">
+
+    <header class="topbar">
+      <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+      <div class="topbar-right">
+        <span class="topbar-date" id="topbar-date"></span>
+        {% if current_user.role in ['counsellor', 'admin'] %}
+        <a href="{{ url_for('admin_dashboard' if current_user.role == 'admin' else 'counsellor_dashboard') }}"
+           class="sos-badge" id="sos-badge" title="Active SOS alerts">
+          <i class="fa-solid fa-bell"></i>
+          <span class="sos-count" id="sos-count" style="display:none;">0</span>
+        </a>
+        {% endif %}
+      </div>
+    </header>
+
+    <main class="content-area">
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-container">
+            {% for cat, msg in messages %}
+              <div class="flash flash-{{ cat }}">
+                <i class="fa-solid
+                  {% if cat == 'success' %}fa-circle-check
+                  {% elif cat == 'danger' %}fa-circle-exclamation
+                  {% elif cat == 'warning' %}fa-triangle-exclamation
+                  {% else %}fa-circle-info{% endif %}">
+                </i>
+                {{ msg }}
+                <button onclick="this.parentElement.remove()" class="flash-close">&times;</button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+
+    </main>
+  </div>
+
+{% else %}
+
+  <!-- Public flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="public-flash">
+        {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">
+            <i class="fa-solid
+              {% if cat == 'success' %}fa-circle-check
+              {% elif cat == 'danger' %}fa-circle-exclamation
+              {% else %}fa-circle-info{% endif %}">
+            </i>
+            {{ msg }}
+            <button onclick="this.parentElement.remove()" class="flash-close">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+
+<script>
+  // Topbar date
+  (function() {
+    const el = document.getElementById('topbar-date');
+    if (el) {
+      el.textContent = new Date().toLocaleDateString('en-ZA', {
+        weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+      });
+    }
+  })();
+
+  // Sidebar toggle (mobile)
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    const sb = document.getElementById('sidebar');
+    if (!sb) return;
+    if (sb.classList.contains('open') &&
+        !sb.contains(e.target) &&
+        !e.target.closest('.sidebar-toggle')) {
+      sb.classList.remove('open');
+    }
+  });
+
+  // SOS badge polling
+  function pollSOS() {
+    fetch('/api/sos-count')
+      .then(r => r.json())
+      .then(d => {
+        const badge = document.getElementById('sos-count');
+        if (badge) {
+          badge.textContent = d.count;
+          badge.style.display = d.count > 0 ? 'flex' : 'none';
+        }
+      }).catch(() => {});
+  }
+  if (document.getElementById('sos-count')) {
+    pollSOS();
+    setInterval(pollSOS, 30000);
+  }
+
+  // Auto-dismiss flash messages after 5s
+  setTimeout(function() {
+    document.querySelectorAll('.flash').forEach(function(f) {
+      f.style.transition = 'opacity 0.5s';
+      f.style.opacity = '0';
+      setTimeout(function() { f.remove(); }, 500);
+    });
+  }, 5000);
+</script>
+</body>
+</html>

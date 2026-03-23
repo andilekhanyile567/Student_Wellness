@@ -1,0 +1,580 @@
+{% extends "base.html" %}
+{% block title %}Book a Session – DUT Wellness{% endblock %}
+{% block page_title %}Book a Session{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ─── Layout ─── */
+  .bk-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    align-items: start;
+    max-width: 1050px;
+  }
+
+  /* ─── Page header ─── */
+  .bk-hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #312e81 100%);
+    border-radius: 16px;
+    padding: 1.8rem 2rem;
+    color: white;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .bk-hero::before {
+    content: '';
+    position: absolute; top: -50px; right: -50px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(99,102,241,0.15);
+  }
+  .bk-hero::after {
+    content: '';
+    position: absolute; bottom: -60px; right: 60px;
+    width: 140px; height: 140px; border-radius: 50%;
+    background: rgba(99,102,241,0.10);
+  }
+  .bk-hero-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.18);
+    position: relative; z-index: 1;
+  }
+  .bk-hero-text { position: relative; z-index: 1; }
+  .bk-hero-text h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; font-weight: 700; margin-bottom: 4px;
+  }
+  .bk-hero-text p { font-size: 0.78rem; opacity: 0.65; line-height: 1.5; }
+
+  /* ─── Form Card ─── */
+  .bk-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+  .bk-section {
+    padding: 1.5rem 1.6rem;
+    border-bottom: 1px solid #f8fafc;
+  }
+  .bk-section:last-child { border-bottom: none; }
+  .bk-section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 1.1rem;
+  }
+  .bk-section-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--dut-blue); color: white;
+    font-size: 0.7rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .bk-section-title { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+  .bk-section-sub   { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+
+  /* ─── Counsellor Cards ─── */
+  .counsellor-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .counsellor-option { position: relative; }
+  .counsellor-option input[type="radio"] {
+    position: absolute; opacity: 0; width: 0; height: 0;
+  }
+  .counsellor-label {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 11px; cursor: pointer;
+    transition: all 0.2s; background: #fafafa;
+  }
+  .counsellor-label:hover {
+    border-color: var(--dut-blue);
+    background: var(--dut-light);
+  }
+  .counsellor-option input:checked + .counsellor-label {
+    border-color: var(--dut-blue);
+    background: var(--dut-light);
+    box-shadow: 0 0 0 3px rgba(0,48,135,0.08);
+  }
+  .counsellor-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--dut-blue), #4f46e5);
+    color: white; font-size: 0.85rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .counsellor-name { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+  .counsellor-dept { font-size: 0.66rem; color: var(--text-muted); margin-top: 1px; }
+  .counsellor-check {
+    margin-left: auto;
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid #ddd;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+    font-size: 0.6rem; color: transparent;
+  }
+  .counsellor-option input:checked + .counsellor-label .counsellor-check {
+    background: var(--dut-blue); border-color: var(--dut-blue); color: white;
+  }
+
+  /* No counsellors fallback */
+  .no-counsellors {
+    text-align: center; padding: 1.5rem;
+    background: #f8fafc; border-radius: 10px;
+    border: 1px dashed var(--border);
+  }
+  .no-counsellors i { font-size: 1.5rem; color: #ccc; display: block; margin-bottom: 8px; }
+  .no-counsellors p { font-size: 0.78rem; color: var(--text-muted); }
+
+  /* ─── Session Type Cards ─── */
+  .session-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .session-option { position: relative; }
+  .session-option input[type="radio"] { position: absolute; opacity: 0; }
+  .session-label {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px; padding: 14px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 11px; cursor: pointer;
+    transition: all 0.2s; background: #fafafa;
+    text-align: center;
+  }
+  .session-label:hover { border-color: var(--dut-blue); background: var(--dut-light); }
+  .session-option input:checked + .session-label {
+    border-color: var(--dut-blue);
+    background: var(--dut-blue);
+    color: white;
+    box-shadow: 0 4px 14px rgba(0,48,135,0.25);
+  }
+  .session-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    background: var(--dut-light); color: var(--dut-blue);
+    transition: all 0.2s;
+  }
+  .session-option input:checked + .session-label .session-icon {
+    background: rgba(255,255,255,0.2); color: white;
+  }
+  .session-name { font-size: 0.76rem; font-weight: 700; }
+  .session-desc { font-size: 0.64rem; opacity: 0.65; }
+
+  /* ─── Date picker ─── */
+  .date-input-wrap { position: relative; }
+  .date-input-icon {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%); color: #aaa;
+    font-size: 0.85rem; pointer-events: none; z-index: 1;
+  }
+  .bk-date {
+    width: 100%; padding: 11px 14px 11px 40px;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    color: var(--text); background: #fafafa; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .bk-date:focus {
+    border-color: var(--dut-blue); background: white;
+    box-shadow: 0 0 0 3px rgba(0,48,135,0.08);
+  }
+
+  /* ─── Reason textarea ─── */
+  .bk-textarea {
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+    color: var(--text); background: #fafafa;
+    resize: vertical; min-height: 110px; outline: none;
+    line-height: 1.6;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .bk-textarea:focus {
+    border-color: var(--dut-blue); background: white;
+    box-shadow: 0 0 0 3px rgba(0,48,135,0.08);
+  }
+  .bk-textarea::placeholder { color: #ccc; }
+  .reason-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .reason-tag {
+    font-size: 0.7rem; padding: 4px 10px;
+    background: #f1f5f9; border-radius: 100px;
+    cursor: pointer; color: var(--text-muted);
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+  }
+  .reason-tag:hover { background: var(--dut-light); color: var(--dut-blue); border-color: var(--dut-blue); }
+
+  /* ─── Submit footer ─── */
+  .bk-footer {
+    padding: 1.4rem 1.6rem;
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+    border-radius: 0 0 16px 16px;
+  }
+  .submit-btn {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, var(--dut-blue) 0%, #1d4ed8 100%);
+    color: white; border: none; border-radius: 11px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.02em;
+    box-shadow: 0 4px 18px rgba(0,48,135,0.28);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s;
+  }
+  .submit-btn:hover { box-shadow: 0 8px 28px rgba(0,48,135,0.38); transform: translateY(-1px); }
+  .submit-btn:active { transform: translateY(0); }
+  .cancel-link {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; padding: 10px;
+    color: var(--text-muted); font-size: 0.82rem; font-weight: 600;
+    text-decoration: none; margin-top: 8px;
+    border-radius: 10px; transition: color 0.2s;
+  }
+  .cancel-link:hover { color: var(--text); }
+
+  /* ─── Right Sidebar ─── */
+  .bk-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+
+  /* Info card */
+  .info-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.3rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .info-card-title {
+    font-size: 0.8rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; gap: 7px; margin-bottom: 1rem;
+  }
+  .info-card-title i { color: var(--dut-blue); font-size: 0.78rem; }
+  .info-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 9px 0; border-bottom: 1px solid #f8fafc;
+    font-size: 0.76rem;
+  }
+  .info-item:last-child { border-bottom: none; }
+  .info-item-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; flex-shrink: 0;
+  }
+  .ii-blue   { background: var(--dut-light); color: var(--dut-blue); }
+  .ii-green  { background: #ecfdf5; color: #059669; }
+  .ii-purple { background: #f5f3ff; color: #7c3aed; }
+  .ii-orange { background: #fff7ed; color: #ea580c; }
+  .info-item-text strong { display: block; font-weight: 700; color: var(--text); margin-bottom: 1px; }
+  .info-item-text span   { color: var(--text-muted); line-height: 1.4; }
+
+  /* What to expect */
+  .expect-card {
+    background: linear-gradient(135deg, #f0f4ff, #faf5ff);
+    border: 1px solid #e0e7ff; border-radius: 16px; padding: 1.3rem;
+  }
+  .expect-title {
+    font-size: 0.8rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; gap: 7px; margin-bottom: 1rem;
+  }
+  .expect-title i { color: var(--dut-blue); }
+  .expect-step {
+    display: flex; gap: 10px; align-items: flex-start;
+    margin-bottom: 10px; font-size: 0.74rem; color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .expect-step:last-child { margin-bottom: 0; }
+  .expect-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--dut-blue); color: white;
+    font-size: 0.62rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* Confidentiality */
+  .confid-card {
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 12px; padding: 1rem 1.2rem;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .confid-card i { color: #059669; margin-top: 2px; flex-shrink: 0; }
+  .confid-card p { font-size: 0.73rem; color: #065f46; line-height: 1.5; }
+  .confid-card strong { font-weight: 700; }
+
+  /* Label helper */
+  .bk-label {
+    display: block; font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: #555; margin-bottom: 7px;
+  }
+
+  @media (max-width: 900px) {
+    .bk-wrapper { grid-template-columns: 1fr; }
+    .bk-sidebar { display: none; }
+    .counsellor-grid { grid-template-columns: 1fr; }
+    .session-grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+  @media (max-width: 500px) {
+    .session-grid { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="bk-wrapper">
+
+  <!-- ── LEFT: FORM ── -->
+  <div>
+
+    <!-- Hero Banner -->
+    <div class="bk-hero">
+      <div class="bk-hero-icon">📅</div>
+      <div class="bk-hero-text">
+        <h2>Book a Counselling Session</h2>
+        <p>Request a private session with one of our qualified DUT counsellors.<br>Responses are usually confirmed within 24 hours.</p>
+      </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bk-card">
+      <form method="POST" action="{{ url_for('booking') }}" id="booking-form">
+
+        <!-- STEP 1: COUNSELLOR -->
+        <div class="bk-section">
+          <div class="bk-section-header">
+            <div class="bk-section-num">1</div>
+            <div>
+              <div class="bk-section-title">Select a Counsellor</div>
+              <div class="bk-section-sub">Choose the counsellor you'd like to meet with</div>
+            </div>
+          </div>
+          {% if counsellors %}
+          <div class="counsellor-grid">
+            {% for c in counsellors %}
+            <div class="counsellor-option">
+              <input type="radio" name="counsellor_id"
+                     id="c{{ c.id }}" value="{{ c.id }}"
+                     {% if loop.first %}checked{% endif %} required>
+              <label class="counsellor-label" for="c{{ c.id }}">
+                <div class="counsellor-avatar">{{ c.full_name[0] }}</div>
+                <div style="flex:1;min-width:0;">
+                  <div class="counsellor-name">{{ c.full_name }}</div>
+                  <div class="counsellor-dept">{{ c.faculty or 'Wellness Centre' }}</div>
+                </div>
+                <div class="counsellor-check">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="no-counsellors">
+            <i class="fa-solid fa-user-doctor"></i>
+            <p>No counsellors available at the moment.<br>Please check back soon.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- STEP 2: SESSION TYPE -->
+        <div class="bk-section">
+          <div class="bk-section-header">
+            <div class="bk-section-num">2</div>
+            <div>
+              <div class="bk-section-title">Session Type</div>
+              <div class="bk-section-sub">How would you prefer to meet?</div>
+            </div>
+          </div>
+          <div class="session-grid">
+            {% set session_types = [
+              ('individual', 'fa-user',  'Individual', '1-on-1 private'),
+              ('group',      'fa-users', 'Group',      'Small group session'),
+              ('online',     'fa-video', 'Online',     'Virtual / video call'),
+            ] %}
+            {% for val, icon, name, desc in session_types %}
+            <div class="session-option">
+              <input type="radio" name="session_type"
+                     id="st-{{ val }}" value="{{ val }}"
+                     {% if val == 'individual' %}checked{% endif %}>
+              <label class="session-label" for="st-{{ val }}">
+                <div class="session-icon"><i class="fa-solid {{ icon }}"></i></div>
+                <div class="session-name">{{ name }}</div>
+                <div class="session-desc">{{ desc }}</div>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- STEP 3: DATE & TIME -->
+        <div class="bk-section">
+          <div class="bk-section-header">
+            <div class="bk-section-num">3</div>
+            <div>
+              <div class="bk-section-title">Preferred Date &amp; Time</div>
+              <div class="bk-section-sub">Choose your preferred appointment slot</div>
+            </div>
+          </div>
+          <label class="bk-label">Date &amp; Time</label>
+          <div class="date-input-wrap">
+            <i class="fa-regular fa-calendar date-input-icon"></i>
+            <input type="datetime-local" name="preferred_date"
+                   class="bk-date" id="preferred-date" required>
+          </div>
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-top:8px;">
+            <i class="fa-solid fa-circle-info"></i>
+            The counsellor will confirm or suggest an alternative time within 24 hours.
+          </p>
+        </div>
+
+        <!-- STEP 4: REASON -->
+        <div class="bk-section">
+          <div class="bk-section-header">
+            <div class="bk-section-num">4</div>
+            <div>
+              <div class="bk-section-title">Reason for Session</div>
+              <div class="bk-section-sub">Help your counsellor prepare — all details are confidential</div>
+            </div>
+          </div>
+          <label class="bk-label">What would you like to discuss?</label>
+          <textarea name="reason" id="reason-text" class="bk-textarea" rows="4"
+                    placeholder="e.g. I've been feeling overwhelmed with academic pressure and would like to talk through some coping strategies..."
+                    required></textarea>
+          <div class="reason-tags">
+            <span class="reason-tag" onclick="addTag('Academic pressure')">📚 Academic pressure</span>
+            <span class="reason-tag" onclick="addTag('Anxiety & stress')">😰 Anxiety & stress</span>
+            <span class="reason-tag" onclick="addTag('Relationship issues')">💔 Relationship issues</span>
+            <span class="reason-tag" onclick="addTag('Financial stress')">💸 Financial stress</span>
+            <span class="reason-tag" onclick="addTag('Family problems')">🏠 Family problems</span>
+            <span class="reason-tag" onclick="addTag('General wellness check')">🌱 General wellness</span>
+          </div>
+        </div>
+
+        <!-- FOOTER: SUBMIT -->
+        <div class="bk-footer">
+          <div style="background:#e8f0fa;border-radius:10px;padding:11px 14px;margin-bottom:1.2rem;font-size:0.76rem;color:var(--dut-blue);display:flex;gap:8px;align-items:center;">
+            <i class="fa-solid fa-lock" style="flex-shrink:0;"></i>
+            All information is strictly confidential and shared only with your assigned counsellor.
+          </div>
+          <button type="submit" class="submit-btn">
+            <i class="fa-solid fa-calendar-check"></i>
+            Submit Booking Request
+          </button>
+          <a href="{{ url_for('student_dashboard') }}" class="cancel-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: SIDEBAR ── -->
+  <div class="bk-sidebar">
+
+    <!-- Session Info -->
+    <div class="info-card">
+      <div class="info-card-title">
+        <i class="fa-solid fa-circle-info"></i> Session Information
+      </div>
+      <div class="info-item">
+        <div class="info-item-icon ii-blue"><i class="fa-solid fa-clock"></i></div>
+        <div class="info-item-text">
+          <strong>Session Duration</strong>
+          <span>Individual sessions are typically 50 minutes. Group sessions run for 60–90 minutes.</span>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-item-icon ii-green"><i class="fa-solid fa-calendar-check"></i></div>
+        <div class="info-item-text">
+          <strong>Confirmation</strong>
+          <span>You'll receive an email confirmation within 24 hours of submitting your request.</span>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-item-icon ii-purple"><i class="fa-solid fa-rotate-left"></i></div>
+        <div class="info-item-text">
+          <strong>Cancellation Policy</strong>
+          <span>Please cancel at least 24 hours in advance so we can offer the slot to another student.</span>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-item-icon ii-orange"><i class="fa-solid fa-video"></i></div>
+        <div class="info-item-text">
+          <strong>Online Sessions</strong>
+          <span>A secure video link will be emailed to you before your appointment.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- What to Expect -->
+    <div class="expect-card">
+      <div class="expect-title">
+        <i class="fa-solid fa-list-check"></i> What to Expect
+      </div>
+      <div class="expect-step">
+        <div class="expect-num">1</div>
+        <span>Submit your booking request with preferred date and reason.</span>
+      </div>
+      <div class="expect-step">
+        <div class="expect-num">2</div>
+        <span>Your counsellor reviews and confirms the appointment via email.</span>
+      </div>
+      <div class="expect-step">
+        <div class="expect-num">3</div>
+        <span>Attend your session — in person or online.</span>
+      </div>
+      <div class="expect-step">
+        <div class="expect-num">4</div>
+        <span>Follow up sessions can be booked anytime through the portal.</span>
+      </div>
+    </div>
+
+    <!-- Confidentiality -->
+    <div class="confid-card">
+      <i class="fa-solid fa-shield-halved"></i>
+      <p><strong>100% Confidential.</strong> Everything shared in your session is protected. Information is never disclosed to academic staff or anyone outside the wellness team without your explicit consent.</p>
+    </div>
+
+    <!-- Crisis reminder -->
+    <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:12px;padding:1rem 1.2rem;display:flex;gap:10px;align-items:flex-start;">
+      <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;margin-top:2px;flex-shrink:0;"></i>
+      <p style="font-size:0.73rem;color:#991b1b;line-height:1.5;">
+        <strong>Need immediate help?</strong><br>
+        If you are in crisis, do not wait for a booking.<br>
+        <a href="{{ url_for('crisis') }}" style="color:#dc2626;font-weight:700;">View crisis lines →</a>
+        &nbsp;or&nbsp;
+        <a href="{{ url_for('sos') }}" style="color:#dc2626;font-weight:700;">Send SOS alert</a>
+      </p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Set minimum date to today
+  const dateInput = document.getElementById('preferred-date');
+  if (dateInput) {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    dateInput.min = now.toISOString().slice(0,16);
+  }
+
+  // Quick-fill reason tags
+  function addTag(text) {
+    const ta = document.getElementById('reason-text');
+    if (ta.value && !ta.value.endsWith(' ')) ta.value += ' ';
+    ta.value += text + '. ';
+    ta.focus();
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} – Forum{% endblock %}
+{% block page_title %}Forum Post{% endblock %}
+{% block content %}
+<div style="max-width:700px;">
+  <a href="{{ url_for('forum') }}" class="btn btn-ghost mb-2"><i class="fa-solid fa-arrow-left"></i> Back to Forum</a>
+
+  <!-- POST -->
+  <div class="card mb-3">
+    {% if post.is_pinned %}<span class="pinned-badge mb-1" style="display:inline-block;">📌 Pinned Post</span>{% endif %}
+    <div class="post-meta">
+      <span class="badge badge-student">{{ post.category|replace('-',' ')|title if post.category else 'General' }}</span>
+      <span>{{ 'Anonymous' if post.is_anonymous else post.author.full_name }}</span>
+      <span>•</span><span>{{ post.timestamp.strftime('%d %b %Y at %H:%M') }}</span>
+    </div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;margin:0.75rem 0;">{{ post.title }}</h2>
+    <div style="font-size:0.95rem;line-height:1.7;color:#444;white-space:pre-wrap;">{{ post.content }}</div>
+    <div style="display:flex;gap:1rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+      <button class="btn btn-ghost btn-sm like-btn" data-post="{{ post.id }}">
+        <i class="fa-solid fa-heart" style="color:#e74c3c;"></i>
+        <span class="like-count">{{ post.likes }}</span> likes
+      </button>
+      <span style="font-size:0.82rem;color:var(--text-muted);align-self:center;"><i class="fa-solid fa-comments"></i> {{ replies|length }} replies</span>
+    </div>
+  </div>
+
+  <!-- REPLIES -->
+  {% if replies %}
+  <div class="card mb-3">
+    <div class="card-title"><i class="fa-solid fa-comments"></i> Replies ({{ replies|length }})</div>
+    {% for r in replies %}
+    <div style="padding:14px 0;border-bottom:1px solid var(--border);{% if loop.last %}border-bottom:none;{% endif %}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <div class="user-avatar" style="width:30px;height:30px;font-size:0.75rem;background:var(--dut-blue);color:white;">
+          {{ 'A' if r.is_anonymous else r.user.full_name[0] }}
+        </div>
+        <span style="font-size:0.82rem;font-weight:600;">{{ 'Anonymous' if r.is_anonymous else r.user.full_name }}</span>
+        <span style="font-size:0.75rem;color:var(--text-muted);">• {{ r.timestamp.strftime('%d %b %H:%M') }}</span>
+        {% if r.user.role in ['counsellor','admin'] %}<span class="badge badge-counsellor">Counsellor</span>{% endif %}
+      </div>
+      <div style="font-size:0.88rem;line-height:1.6;color:#444;padding-left:38px;">{{ r.content }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- REPLY FORM -->
+  <div class="card">
+    <div class="card-title"><i class="fa-solid fa-reply"></i> Add a Reply</div>
+    <form method="POST">
+      <div class="form-group">
+        <textarea name="content" class="form-textarea" rows="4" placeholder="Share your thoughts or support..." required></textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+        <input type="checkbox" id="anon-reply" name="anonymous" style="accent-color:var(--dut-blue);">
+        <label for="anon-reply" style="font-size:0.82rem;cursor:pointer;"><i class="fa-solid fa-user-secret"></i> Reply anonymously</label>
+      </div>
+      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Post Reply</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ student.full_name }} – Student Profile{% endblock %}
+{% block page_title %}Student Profile{% endblock %}
+{% block extra_css %}<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('counsellor_dashboard') }}" class="btn btn-ghost mb-2"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+
+<div class="profile-header mb-3">
+  <div class="profile-avatar">{{ student.full_name[0] }}</div>
+  <div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;margin-bottom:4px;">{{ student.full_name }}</h2>
+    <p style="opacity:0.8;">{{ student.student_number }} · {{ student.faculty or '—' }}</p>
+    <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+      {% if student.phone %}<a href="tel:{{ student.phone }}" class="btn btn-sm" style="background:var(--dut-gold);color:var(--dut-blue);"><i class="fa-solid fa-phone"></i> {{ student.phone }}</a>{% endif %}
+      <a href="mailto:{{ student.email }}" class="btn btn-sm btn-ghost"><i class="fa-solid fa-envelope"></i> Email</a>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Mood chart -->
+  <div class="card col-span-2">
+    <div class="card-title"><i class="fa-solid fa-chart-line"></i> Mood Trend (Last 14 Check-ins)</div>
+    {% if mood_data %}
+    <div class="chart-container"><canvas id="moodChart"></canvas></div>
+    {% else %}
+    <div class="empty-state"><i class="fa-solid fa-chart-line"></i><p>No check-ins recorded</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Student Details -->
+  <div class="card">
+    <div class="card-title"><i class="fa-solid fa-user"></i> Student Details</div>
+    <table style="font-size:0.875rem;width:100%;">
+      <tr><td style="color:var(--text-muted);padding:6px 0;width:140px;">Email</td><td>{{ student.email }}</td></tr>
+      <tr><td style="color:var(--text-muted);padding:6px 0;">Faculty</td><td>{{ student.faculty or '—' }}</td></tr>
+      <tr><td style="color:var(--text-muted);padding:6px 0;">Member Since</td><td>{{ student.created_at.strftime('%d %b %Y') }}</td></tr>
+      <tr><td style="color:var(--text-muted);padding:6px 0;">Total Check-ins</td><td>{{ checkins|length }}</td></tr>
+      <tr><td style="color:var(--text-muted);padding:6px 0;">Emergency Contact</td><td>{{ student.emergency_contact or '—' }}</td></tr>
+      <tr><td style="color:var(--text-muted);padding:6px 0;">Emergency Phone</td><td>{{ student.emergency_phone or '—' }}</td></tr>
+    </table>
+  </div>
+
+  <!-- Bookings -->
+  <div class="card">
+    <div class="card-title"><i class="fa-solid fa-calendar"></i> Session History</div>
+    {% if bookings %}
+    {% for b in bookings %}
+    <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:0.85rem;font-weight:500;">{{ b.session_type|title }}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">{{ b.preferred_date.strftime('%d %b %Y') if b.preferred_date else 'TBD' }}</div>
+      </div>
+      <span class="badge badge-{{ b.status }}">{{ b.status }}</span>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state"><i class="fa-solid fa-calendar"></i><p>No sessions booked</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Check-ins -->
+  <div class="card col-span-2">
+    <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Check-in Log</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Mood</th><th>Stress</th><th>Sleep</th><th>Activity</th><th>Notes</th><th>AI Feedback</th></tr></thead>
+        <tbody>
+          {% for c in checkins[:20] %}
+          <tr>
+            <td style="white-space:nowrap;font-size:0.78rem;">{{ c.timestamp.strftime('%d %b %Y %H:%M') }}</td>
+            <td><div class="mood-dot mood-{{ c.mood_score }}" style="width:28px;height:28px;font-size:0.75rem;">{{ c.mood_score }}</div></td>
+            <td>{% if c.stress_level %}<span class="badge badge-{{ 'cancelled' if c.stress_level>=7 else 'pending' if c.stress_level>=5 else 'confirmed' }}">{{ c.stress_level }}</span>{% else %}—{% endif %}</td>
+            <td style="font-size:0.82rem;">{{ c.sleep_hours|string+'h' if c.sleep_hours else '—' }}</td>
+            <td style="font-size:0.78rem;">{{ c.physical_activity or '—' }}</td>
+            <td style="font-size:0.78rem;max-width:120px;color:#555;">{{ c.notes[:50]+'...' if c.notes and c.notes|length>50 else c.notes or '—' }}</td>
+            <td style="font-size:0.75rem;color:var(--text-muted);max-width:150px;">{{ c.ai_feedback[:60]+'...' if c.ai_feedback and c.ai_feedback|length>60 else c.ai_feedback or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const moodLabels = {{ mood_labels | tojson }};
+const moodData = {{ mood_data | tojson }};
+renderMoodChart(moodLabels, moodData, [], []);
+</script>
+{% endblock %}

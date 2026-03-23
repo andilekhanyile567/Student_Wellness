@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}My Profile – DUT Wellness{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block content %}
+<div style="max-width:680px;">
+  <!-- Profile Header -->
+  <div class="profile-header mb-3">
+    <div class="profile-avatar">{{ current_user.full_name[0] }}</div>
+    <div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;margin-bottom:4px;">{{ current_user.full_name }}</h2>
+      <p style="opacity:0.8;font-size:0.88rem;">{{ current_user.student_number }} · {{ current_user.faculty or 'Faculty not set' }}</p>
+      <span class="badge badge-{{ current_user.role }}" style="margin-top:6px;">{{ current_user.role|title }}</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-container">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="info">Personal Info</button>
+      <button class="tab-btn" data-tab="security">Security</button>
+      <button class="tab-btn" data-tab="emergency">Emergency Contact</button>
+      <button class="tab-btn" data-tab="stats">My Stats</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('profile') }}">
+      <!-- Personal Info Tab -->
+      <div class="tab-pane active" id="tab-info">
+        <div class="card">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <div class="input-wrap"><i class="fa-solid fa-user input-icon"></i>
+              <input type="text" name="full_name" class="form-control" value="{{ current_user.full_name }}"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Student Number</label>
+              <div class="input-wrap"><i class="fa-solid fa-id-badge input-icon"></i>
+              <input type="text" class="form-control" value="{{ current_user.student_number }}" disabled style="background:#f5f5f5;"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i>
+              <input type="email" class="form-control" value="{{ current_user.email }}" disabled style="background:#f5f5f5;"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <div class="input-wrap"><i class="fa-solid fa-phone input-icon"></i>
+              <input type="tel" name="phone" class="form-control" value="{{ current_user.phone or '' }}" placeholder="07X XXX XXXX"></div>
+            </div>
+            <div class="form-group" style="grid-column:span 2">
+              <label class="form-label">Faculty</label>
+              <select name="faculty" class="form-select">
+                {% for f in ['Accounting & Informatics','Applied Sciences','Arts & Design','Engineering & Built Environment','Health Sciences','Management Sciences'] %}
+                <option value="{{ f }}" {% if current_user.faculty == f %}selected{% endif %}>{{ f }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary mt-2"><i class="fa-solid fa-save"></i> Save Changes</button>
+        </div>
+      </div>
+
+      <!-- Security Tab -->
+      <div class="tab-pane" id="tab-security">
+        <div class="card">
+          <p class="text-muted mb-2">Leave password fields empty to keep your current password.</p>
+          <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" name="current_password" class="form-control" placeholder="Enter current password"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" name="new_password" class="form-control" placeholder="Min 8 characters"></div>
+          </div>
+          <button type="submit" class="btn btn-primary mt-2"><i class="fa-solid fa-shield-halved"></i> Update Password</button>
+        </div>
+      </div>
+
+      <!-- Emergency Tab -->
+      <div class="tab-pane" id="tab-emergency">
+        <div class="card">
+          <p class="text-muted mb-2">This information is used in case of emergencies. Please keep it up to date.</p>
+          <div class="form-group">
+            <label class="form-label">Emergency Contact Name</label>
+            <div class="input-wrap"><i class="fa-solid fa-user-shield input-icon"></i>
+            <input type="text" name="emergency_contact" class="form-control" value="{{ current_user.emergency_contact or '' }}" placeholder="Parent / Guardian"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Emergency Contact Phone</label>
+            <div class="input-wrap"><i class="fa-solid fa-phone-volume input-icon"></i>
+            <input type="tel" name="emergency_phone" class="form-control" value="{{ current_user.emergency_phone or '' }}" placeholder="07X XXX XXXX"></div>
+          </div>
+          <button type="submit" class="btn btn-primary mt-2"><i class="fa-solid fa-save"></i> Save Emergency Contact</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Stats Tab (read-only) -->
+    <div class="tab-pane" id="tab-stats">
+      <div class="card">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fa-solid fa-heart-pulse"></i></div>
+            <div><div class="stat-value">{{ current_user.checkins|length }}</div><div class="stat-label">Total Check-ins</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon gold"><i class="fa-solid fa-comments"></i></div>
+            <div><div class="stat-value">{{ current_user.posts|length }}</div><div class="stat-label">Forum Posts</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="fa-solid fa-calendar-check"></i></div>
+            <div><div class="stat-value">{{ current_user.bookings|length }}</div><div class="stat-label">Sessions Booked</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple"><i class="fa-solid fa-calendar"></i></div>
+            <div><div class="stat-value">{{ current_user.created_at.strftime('%b %Y') }}</div><div class="stat-label">Member Since</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

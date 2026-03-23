@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Peer Forum – DUT Wellness{% endblock %}
+{% block page_title %}Peer Support Forum{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1>Peer Support Forum</h1>
+    <p>A safe, anonymous space to share and support each other</p>
+  </div>
+  <a href="{{ url_for('new_post') }}" class="btn btn-primary"><i class="fa-solid fa-pen-to-square"></i> New Post</a>
+</div>
+
+<!-- CATEGORY FILTERS -->
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;">
+  <a href="{{ url_for('forum') }}" class="category-pill {% if category=='all' %}active{% endif %}">All</a>
+  {% for cat in ['mental-health','academic','relationships','wellness','general','question'] %}
+  <a href="{{ url_for('forum', category=cat) }}" class="category-pill {% if category==cat %}active{% endif %}">
+    {{ {'mental-health':'🧠 Mental Health','academic':'📚 Academic','relationships':'💞 Relationships','wellness':'💪 Wellness','general':'💬 General','question':'❓ Question'}[cat] }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- POSTS -->
+{% if posts %}
+<div style="display:flex;flex-direction:column;gap:1rem;">
+  {% for p in posts %}
+  <a href="{{ url_for('view_post', post_id=p.id) }}" class="post-card">
+    <div class="post-meta">
+      {% if p.is_pinned %}<span class="pinned-badge">📌 Pinned</span>{% endif %}
+      <span class="badge badge-student">{{ p.category|replace('-',' ')|title if p.category else 'General' }}</span>
+      <span>{{ 'Anonymous' if p.is_anonymous else p.author.full_name }}</span>
+      <span>•</span>
+      <span>{{ p.timestamp.strftime('%d %b %Y') }}</span>
+    </div>
+    <div class="post-title">{{ p.title }}</div>
+    <div class="post-preview">{{ p.content }}</div>
+    <div class="post-footer">
+      <span><i class="fa-solid fa-comments"></i> {{ p.replies|length }} replies</span>
+      <span><i class="fa-solid fa-heart"></i> {{ p.likes }} likes</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+  <i class="fa-solid fa-comments"></i>
+  <p>No posts yet in this category. <a href="{{ url_for('new_post') }}">Be the first to post!</a></p>
+</div>
+{% endif %}
+{% endblock %}

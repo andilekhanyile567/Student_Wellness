@@ -1,0 +1,41 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+body{font-family:'Segoe UI',Arial,sans-serif;background:#fff5f5;margin:0;padding:20px;}
+.wrap{max-width:560px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(231,76,60,0.2);}
+.header{background:linear-gradient(135deg,#8b0000,#c0392b);padding:2rem;text-align:center;color:white;}
+.header h1{margin:0;font-size:1.6rem;}
+.header p{margin:6px 0 0;opacity:0.9;}
+.body{padding:2rem;}
+.alert-box{background:#fef2f2;border:2px solid #fca5a5;border-radius:12px;padding:1.5rem;margin:1rem 0;}
+.alert-box h3{color:#c0392b;margin-top:0;}
+.field{display:flex;gap:10px;margin-bottom:8px;font-size:0.88rem;}
+.field label{color:#888;width:120px;flex-shrink:0;}
+.field span{color:#1a1a2e;font-weight:500;}
+.btn{display:inline-block;padding:12px 24px;background:#c0392b;color:white;text-decoration:none;border-radius:10px;font-weight:700;font-size:0.95rem;}
+.footer{background:#f5f7fa;padding:1rem;text-align:center;font-size:0.75rem;color:#888;}
+</style></head>
+<body><div class="wrap">
+<div class="header">
+  <div style="font-size:3rem;margin-bottom:0.5rem;">🚨</div>
+  <h1>SOS EMERGENCY ALERT</h1>
+  <p>Immediate response required</p>
+</div>
+<div class="body">
+  <p><strong>A student has triggered an SOS alert and needs immediate assistance.</strong></p>
+  <div class="alert-box">
+    <h3>Student Details</h3>
+    <div class="field"><label>Name:</label><span>{{ user.full_name }}</span></div>
+    <div class="field"><label>Student #:</label><span>{{ user.student_number }}</span></div>
+    <div class="field"><label>Phone:</label><span>{{ user.phone or 'Not provided' }}</span></div>
+    <div class="field"><label>Faculty:</label><span>{{ user.faculty or 'Not set' }}</span></div>
+    <div class="field"><label>Emergency:</label><span>{{ user.emergency_contact or 'Not provided' }} · {{ user.emergency_phone or '' }}</span></div>
+  </div>
+  <div class="alert-box">
+    <h3>Alert Details</h3>
+    <div class="field"><label>Message:</label><span>{{ alert.message or 'Emergency assistance needed' }}</span></div>
+    <div class="field"><label>Location:</label><span>{{ alert.location or 'Not provided' }}</span></div>
+    <div class="field"><label>Time:</label><span>{{ alert.created_at.strftime('%d %b %Y at %H:%M') }}</span></div>
+  </div>
+  <p style="text-align:center;"><a href="http://localhost:5000/counsellor/dashboard" class="btn">Respond to Alert →</a></p>
+</div>
+<div class="footer">DUT Wellness Centre Emergency System · Do not ignore this alert</div>
+</div></body></html>

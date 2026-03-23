@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Resources – DUT Wellness{% endblock %}
+{% block page_title %}Wellness Resources{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Wellness Resources</h1>
+  <p>Curated articles, hotlines, and tools to support your mental health journey</p>
+</div>
+
+<!-- CATEGORY FILTER -->
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;">
+  <a href="{{ url_for('resources') }}" class="category-pill {% if category=='all' %}active{% endif %}">All</a>
+  {% for cat in ['crisis','wellness','academic','health'] %}
+  <a href="{{ url_for('resources', category=cat) }}" class="category-pill {% if category==cat %}active{% endif %}">
+    {{ {'crisis':'🆘 Crisis','wellness':'🌱 Wellness','academic':'📚 Academic','health':'🏥 Health'}[cat] }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- EMERGENCY BANNER -->
+<div class="card mb-3" style="background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;border:none;">
+  <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+    <div style="font-size:3rem;">🆘</div>
+    <div style="flex:1;">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:4px;">Need Immediate Help?</h3>
+      <p style="opacity:0.9;font-size:0.88rem;">If you or someone you know is in crisis, please call immediately.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a href="tel:0800567567" class="btn" style="background:white;color:#c0392b;">📞 0800-567-567</a>
+      <a href="{{ url_for('crisis') }}" class="btn" style="background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.4);">All Hotlines</a>
+    </div>
+  </div>
+</div>
+
+{% if resources %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;">
+  {% for r in resources %}
+  <div class="resource-card {% if r.category=='crisis' %}hotline-card{% endif %}">
+    <div class="resource-icon">
+      {% if r.resource_type == 'hotline' %}📞
+      {% elif r.resource_type == 'video' %}🎥
+      {% elif r.resource_type == 'document' %}📄
+      {% else %}📖{% endif %}
+    </div>
+    {% if r.is_featured %}<span class="badge badge-confirmed mb-1">⭐ Featured</span>{% endif %}
+    <div class="resource-title">{{ r.title }}</div>
+    {% if r.resource_type == 'hotline' %}
+    <div class="hotline-number">{{ r.url|replace('tel:','') }}</div>
+    {% endif %}
+    <div class="resource-desc">{{ r.content or '' }}</div>
+    {% if r.url %}
+    <a href="{{ r.url }}" class="resource-link">
+      {% if r.resource_type == 'hotline' %}📞 Call Now{% else %}Read More →{% endif %}
+    </a>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+  <i class="fa-solid fa-book-open"></i>
+  <p>No resources found in this category.</p>
+</div>
+{% endif %}
+
+<!-- SELF-HELP TIPS -->
+<div class="card mt-3">
+  <div class="card-title"><i class="fa-solid fa-lightbulb"></i> Quick Wellness Tips</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;">
+    {% for tip in [
+      ('🌬️','Box Breathing','Inhale 4s → Hold 4s → Exhale 4s → Hold 4s. Repeat 4 times to reduce anxiety.'),
+      ('🚶','5-Minute Walk','A short walk outside improves mood and reduces cortisol by up to 20%.'),
+      ('📵','Digital Detox','Take 1 hour away from screens each evening to improve sleep quality.'),
+      ('💧','Stay Hydrated','Dehydration worsens mood and concentration. Aim for 8 glasses daily.'),
+      ('📓','Journaling','Writing 3 things you are grateful for each day boosts mental resilience.'),
+      ('🤝','Connect','Reach out to one friend or family member today. Social connection is vital.')
+    ] %}
+    <div style="background:var(--surface-2);border-radius:12px;padding:1rem;border:1px solid var(--border);">
+      <div style="font-size:1.8rem;margin-bottom:6px;">{{ tip[0] }}</div>
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px;">{{ tip[1] }}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">{{ tip[2] }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

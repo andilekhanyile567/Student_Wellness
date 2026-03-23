@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Counsellor Dashboard{% endblock %}
+{% block page_title %}Counsellor Dashboard{% endblock %}
+{% block extra_css %}<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Welcome, {{ current_user.full_name.split()[0] }} 👩‍⚕️</h1>
+  <p>Student wellness overview and session management</p>
+</div>
+
+<!-- STATS -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
+    <div><div class="stat-value">{{ students|length }}</div><div class="stat-label">Total Students</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon gold"><i class="fa-solid fa-calendar-check"></i></div>
+    <div><div class="stat-value">{{ pending_bookings|length }}</div><div class="stat-label">Pending Sessions</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <div><div class="stat-value">{{ active_sos|length }}</div><div class="stat-label">Active SOS Alerts</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"><i class="fa-solid fa-face-frown"></i></div>
+    <div><div class="stat-value">{{ low_mood|length }}</div><div class="stat-label">Low Mood Reports</div></div>
+  </div>
+</div>
+
+<!-- ACTIVE SOS ALERTS -->
+{% if active_sos %}
+<div class="card mb-3" style="border:2px solid #e74c3c;">
+  <div class="card-title" style="color:#c0392b;"><i class="fa-solid fa-triangle-exclamation"></i> 🚨 Active SOS Alerts ({{ active_sos|length }})</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Student</th><th>Message</th><th>Location</th><th>Time</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for sos in active_sos %}
+        <tr style="background:#fff5f5;">
+          <td>
+            <a href="{{ url_for('view_student', student_id=sos.user_id) }}" style="font-weight:600;color:var(--dut-blue);text-decoration:none;">
+              {{ sos.user.full_name }}<br>
+              <span style="font-size:0.75rem;color:var(--text-muted);">{{ sos.user.student_number }}</span>
+            </a>
+          </td>
+          <td style="font-size:0.85rem;">{{ sos.message or 'Emergency assistance needed' }}</td>
+          <td style="font-size:0.82rem;">{{ sos.location or '—' }}</td>
+          <td style="font-size:0.78rem;white-space:nowrap;">{{ sos.created_at.strftime('%d %b %H:%M') }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('respond_sos', sos_id=sos.id) }}" style="display:inline;">
+              <button type="submit" class="btn btn-danger btn-sm">Respond</button>
+            </form>
+            <a href="tel:{{ sos.user.phone or '' }}" class="btn btn-ghost btn-sm">📞 Call</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<div class="grid-2">
+  <!-- PENDING BOOKINGS -->
+  <div class="card">
+    <div class="card-title"><i class="fa-solid fa-calendar-check"></i> Pending Booking Requests</div>
+    {% if pending_bookings %}
+    {% for b in pending_bookings %}
+    <div style="padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+        <div>
+          <a href="{{ url_for('view_student', student_id=b.student_id) }}" style="font-weight:600;font-size:0.9rem;color:var(--dut-blue);text-decoration:none;">{{ b.student.full_name }}</a>
+          <div style="font-size:0.78rem;color:var(--text-muted);">{{ b.session_type|title }} · {% if b.preferred_date %}{{ b.preferred_date.strftime('%d %b %Y %H:%M') }}{% else %}Date TBD{% endif %}</div>
+          {% if b.reason %}<div style="font-size:0.78rem;color:#666;margin-top:2px;">{{ b.reason[:80] }}...</div>{% endif %}
+        </div>
+        <span class="badge badge-pending">Pending</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <form method="POST" action="{{ url_for('update_booking', booking_id=b.id) }}" style="flex:1;">
+          <input type="hidden" name="status" value="confirmed">
+          <button type="submit" class="btn btn-success btn-sm btn-block"><i class="fa-solid fa-check"></i> Confirm</button>
+        </form>
+        <form method="POST" action="{{ url_for('update_booking', booking_id=b.id) }}" style="flex:1;">
+          <input type="hidden" name="status" value="cancelled">
+          <button type="submit" class="btn btn-danger btn-sm btn-block"><i class="fa-solid fa-xmark"></i> Decline</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state"><i class="fa-solid fa-calendar"></i><p>No pending bookings</p></div>
+    {% endif %}
+  </div>
+
+  <!-- LOW MOOD ALERTS -->
+  <div class="card">
+    <div class="card-title" style="color:#e67e22;"><i class="fa-solid fa-face-sad-tear"></i> Low Mood Reports</div>
+    {% if low_mood %}
+    {% for c in low_mood %}
+    <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+      <div class="mood-dot mood-{{ c.mood_score }}">{{ c.mood_score }}</div>
+      <div style="flex:1;">
+        <a href="{{ url_for('view_student', student_id=c.user_id) }}" style="font-size:0.85rem;font-weight:600;color:var(--dut-blue);text-decoration:none;">{{ c.user.full_name }}</a>
+        <div style="font-size:0.75rem;color:var(--text-muted);">{{ c.timestamp.strftime('%d %b %Y %H:%M') }}</div>
+        {% if c.notes %}<div style="font-size:0.75rem;color:#666;">{{ c.notes[:60] }}...</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state"><i class="fa-solid fa-face-smile"></i><p>No low mood reports</p></div>
+    {% endif %}
+  </div>
+
+  <!-- RECENT CHECK-INS -->
+  <div class="card col-span-2">
+    <div class="card-title"><i class="fa-solid fa-heart-pulse"></i> Recent Student Check-ins</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Student</th><th>Mood</th><th>Stress</th><th>Sleep</th><th>Date</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for c in recent_checkins %}
+          <tr>
+            <td><a href="{{ url_for('view_student', student_id=c.user_id) }}" style="color:var(--dut-blue);text-decoration:none;font-weight:500;font-size:0.85rem;">{{ c.user.full_name }}</a></td>
+            <td><div class="mood-dot mood-{{ c.mood_score }}" style="width:28px;height:28px;font-size:0.75rem;">{{ c.mood_score }}</div></td>
+            <td>{% if c.stress_level %}<span class="badge badge-{{ 'cancelled' if c.stress_level>=7 else 'pending' if c.stress_level>=5 else 'confirmed' }}">{{ c.stress_level }}</span>{% else %}—{% endif %}</td>
+            <td style="font-size:0.85rem;">{{ c.sleep_hours|string + 'h' if c.sleep_hours else '—' }}</td>
+            <td style="font-size:0.78rem;color:var(--text-muted);">{{ c.timestamp.strftime('%d %b %H:%M') }}</td>
+            <td><a href="{{ url_for('view_student', student_id=c.user_id) }}" class="btn btn-ghost btn-sm">View</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

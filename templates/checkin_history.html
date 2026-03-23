@@ -1,0 +1,692 @@
+{% extends "base.html" %}
+{% block title %}Check-in History – DUT Wellness{% endblock %}
+{% block page_title %}My Wellness History{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  /* ─── Page layout ─── */
+  .ch-wrapper { max-width: 1200px; }
+
+  /* ─── Summary stat strip ─── */
+  .ch-stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.4rem;
+  }
+  .ch-stat {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 1.1rem 1.2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .ch-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+  .ch-stat::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 13px 13px 0 0;
+  }
+  .ch-stat.s-blue::before   { background: var(--dut-blue); }
+  .ch-stat.s-green::before  { background: #10b981; }
+  .ch-stat.s-orange::before { background: #f97316; }
+  .ch-stat.s-purple::before { background: #8b5cf6; }
+  .ch-stat.s-rose::before   { background: #f43f5e; }
+  .ch-stat-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.88rem; margin-bottom: 10px;
+  }
+  .si-blue   { background: var(--dut-light); color: var(--dut-blue); }
+  .si-green  { background: #ecfdf5; color: #059669; }
+  .si-orange { background: #fff7ed; color: #ea580c; }
+  .si-purple { background: #f5f3ff; color: #7c3aed; }
+  .si-rose   { background: #fff1f2; color: #e11d48; }
+  .ch-stat-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 700;
+    color: var(--text); line-height: 1;
+  }
+  .ch-stat-lbl { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+
+  /* ─── Charts row ─── */
+  .ch-charts {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .ch-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .ch-card-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 0.3rem;
+  }
+  .ch-card-title {
+    font-size: 0.85rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .ch-card-title i { color: var(--dut-blue); font-size: 0.8rem; }
+  .ch-card-sub { font-size: 0.68rem; color: var(--text-muted); margin-bottom: 1rem; }
+  .chart-240 { position: relative; height: 240px; }
+  .chart-200 { position: relative; height: 200px; }
+
+  /* ─── Filter bar ─── */
+  .filter-bar {
+    display: flex; align-items: center;
+    gap: 8px; flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .filter-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); }
+  .filter-btn {
+    font-size: 0.72rem; font-weight: 600; padding: 5px 14px;
+    border: 1.5px solid var(--border); border-radius: 100px;
+    background: white; color: var(--text-muted);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--dut-blue); color: white; border-color: var(--dut-blue);
+  }
+  .filter-search {
+    margin-left: auto; position: relative;
+  }
+  .filter-search i {
+    position: absolute; left: 10px; top: 50%;
+    transform: translateY(-50%); color: #ccc; font-size: 0.75rem;
+  }
+  .filter-search input {
+    padding: 6px 12px 6px 30px;
+    border: 1.5px solid var(--border); border-radius: 100px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.75rem;
+    outline: none; color: var(--text); background: white;
+    transition: border-color 0.2s; width: 200px;
+  }
+  .filter-search input:focus { border-color: var(--dut-blue); }
+
+  /* ─── Records card ─── */
+  .records-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  .records-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.2rem 1.4rem;
+    border-bottom: 1px solid #f8fafc;
+  }
+  .records-title {
+    font-size: 0.85rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .records-title i { color: var(--dut-blue); font-size: 0.8rem; }
+  .records-count {
+    font-size: 0.68rem; font-weight: 700; padding: 3px 10px;
+    background: var(--dut-light); color: var(--dut-blue);
+    border-radius: 100px;
+  }
+
+  /* ─── Check-in cards (grid view) ─── */
+  .records-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1px;
+    background: #f8fafc;
+  }
+  .ci-record {
+    background: white;
+    padding: 1.2rem 1.4rem;
+    transition: background 0.15s;
+    cursor: default;
+  }
+  .ci-record:hover { background: #fafbff; }
+
+  .ci-record-top {
+    display: flex; align-items: flex-start;
+    gap: 12px; margin-bottom: 10px;
+  }
+  .ci-mood-ball {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 800; color: white;
+    flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .mb-1, .mb-2, .mb-3 { background: linear-gradient(135deg,#ef4444,#dc2626); }
+  .mb-4, .mb-5         { background: linear-gradient(135deg,#f97316,#ea580c); }
+  .mb-6, .mb-7         { background: linear-gradient(135deg,#eab308,#ca8a04); }
+  .mb-8, .mb-9         { background: linear-gradient(135deg,#22c55e,#16a34a); }
+  .mb-10                { background: linear-gradient(135deg,#10b981,#059669); }
+
+  .ci-record-info { flex: 1; min-width: 0; }
+  .ci-record-date {
+    font-size: 0.82rem; font-weight: 700; color: var(--text);
+  }
+  .ci-record-time { font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
+  .ci-record-mood-label {
+    font-size: 0.72rem; font-weight: 600; margin-top: 3px;
+  }
+
+  /* Metrics row */
+  .ci-metrics {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  .ci-metric {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 0.7rem; padding: 3px 9px;
+    border-radius: 100px; font-weight: 600;
+  }
+  .cm-stress-low  { background: #ecfdf5; color: #059669; }
+  .cm-stress-mid  { background: #fffbeb; color: #b45309; }
+  .cm-stress-high { background: #fef2f2; color: #dc2626; }
+  .cm-sleep-good  { background: #eff6ff; color: #1d4ed8; }
+  .cm-sleep-ok    { background: #fafaf9; color: #78716c; }
+  .cm-activity    { background: #f5f3ff; color: #7c3aed; }
+
+  /* AI feedback */
+  .ci-ai {
+    background: #f8fafc;
+    border-left: 3px solid var(--dut-blue);
+    border-radius: 0 8px 8px 0;
+    padding: 7px 10px;
+    font-size: 0.71rem; color: var(--text-muted);
+    line-height: 1.5;
+    display: flex; gap: 6px; align-items: flex-start;
+  }
+  .ci-ai i { color: var(--dut-blue); flex-shrink: 0; margin-top: 2px; font-size: 0.65rem; }
+
+  /* Notes */
+  .ci-notes {
+    font-size: 0.72rem; color: #888;
+    font-style: italic; margin-top: 6px;
+    overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+
+  /* ─── Table view (toggleable) ─── */
+  .ci-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+  .ci-table thead th {
+    text-align: left; padding: 10px 14px;
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-muted);
+    background: #f8fafc; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .ci-table tbody td {
+    padding: 11px 14px; border-bottom: 1px solid #f8fafc;
+    vertical-align: middle;
+  }
+  .ci-table tbody tr:hover td { background: #fafbff; }
+  .ci-table tbody tr:last-child td { border-bottom: none; }
+
+  /* Mood mini */
+  .mood-mini {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 800; color: white;
+  }
+  /* Mini bar */
+  .score-mini { display: flex; align-items: center; gap: 6px; }
+  .score-bar  { flex: 1; height: 5px; background: #f1f5f9; border-radius: 3px; width: 60px; }
+  .score-fill { height: 100%; border-radius: 3px; }
+
+  /* Status badge */
+  .st-badge {
+    font-size: 0.62rem; font-weight: 700; padding: 3px 9px;
+    border-radius: 100px; white-space: nowrap;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .st-low  { background: #fef2f2; color: #991b1b; }
+  .st-mid  { background: #fffbeb; color: #b45309; }
+  .st-high { background: #ecfdf5; color: #065f46; }
+
+  /* View toggle */
+  .view-toggle { display: flex; gap: 4px; }
+  .vt-btn {
+    width: 30px; height: 30px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--border); background: white;
+    cursor: pointer; color: var(--text-muted); font-size: 0.75rem;
+    transition: all 0.15s;
+  }
+  .vt-btn.active { background: var(--dut-blue); color: white; border-color: var(--dut-blue); }
+
+  /* ─── Pagination ─── */
+  .pagination {
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px; padding: 1.1rem;
+    border-top: 1px solid #f8fafc;
+  }
+  .pg-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border); background: white;
+    cursor: pointer; font-size: 0.78rem; color: var(--text-muted);
+    transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+  }
+  .pg-btn:hover { border-color: var(--dut-blue); color: var(--dut-blue); }
+  .pg-btn.active { background: var(--dut-blue); color: white; border-color: var(--dut-blue); font-weight: 700; }
+  .pg-ellipsis { color: var(--text-muted); font-size: 0.78rem; padding: 0 4px; }
+
+  /* ─── Empty state ─── */
+  .ch-empty {
+    text-align: center; padding: 4rem 2rem;
+  }
+  .ch-empty-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: #f1f5f9; color: #cbd5e1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; margin: 0 auto 1.2rem;
+  }
+  .ch-empty h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--text); margin-bottom: 6px; }
+  .ch-empty p  { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.2rem; }
+
+  /* ─── Legend ─── */
+  .chart-legend {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px;
+  }
+  .cl-item { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; color: var(--text-muted); }
+  .cl-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  @media (max-width: 1100px) { .ch-stats { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 900px)  { .ch-charts { grid-template-columns: 1fr; } .ch-stats { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px)  { .ch-stats { grid-template-columns: 1fr 1fr; } .records-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ch-wrapper">
+
+  <!-- Page Header -->
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.8rem;margin-bottom:1.4rem;">
+    <div>
+      <h1>My Wellness History</h1>
+      <p>A full view of your mental health journey — {{ checkins|length }} check-in{{ 's' if checkins|length != 1 else '' }} recorded</p>
+    </div>
+    <a href="{{ url_for('checkin') }}" class="btn btn-primary">
+      <i class="fa-solid fa-plus"></i> New Check-in
+    </a>
+  </div>
+
+  <!-- ─── STAT STRIP ─── -->
+  {% if checkins %}
+  <div class="ch-stats">
+    <div class="ch-stat s-blue">
+      <div class="ch-stat-icon si-blue"><i class="fa-solid fa-heart-pulse"></i></div>
+      <div class="ch-stat-val">{{ checkins|length }}</div>
+      <div class="ch-stat-lbl">Total Check-ins</div>
+    </div>
+    <div class="ch-stat s-green">
+      <div class="ch-stat-icon si-green"><i class="fa-solid fa-face-smile"></i></div>
+      <div class="ch-stat-val">{{ (checkins|sum(attribute='mood_score') / checkins|length)|round(1) }}</div>
+      <div class="ch-stat-lbl">Avg Mood Score</div>
+    </div>
+    <div class="ch-stat s-orange">
+      <div class="ch-stat-icon si-orange"><i class="fa-solid fa-brain"></i></div>
+      <div class="ch-stat-val">
+        {% set stress_list = checkins|selectattr('stress_level')|list %}
+        {% if stress_list %}{{ (stress_list|sum(attribute='stress_level') / stress_list|length)|round(1) }}{% else %}—{% endif %}
+      </div>
+      <div class="ch-stat-lbl">Avg Stress Level</div>
+    </div>
+    <div class="ch-stat s-purple">
+      <div class="ch-stat-icon si-purple"><i class="fa-solid fa-moon"></i></div>
+      <div class="ch-stat-val">
+        {% set sleep_list = checkins|selectattr('sleep_hours')|list %}
+        {% if sleep_list %}{{ (sleep_list|sum(attribute='sleep_hours') / sleep_list|length)|round(1) }}h{% else %}—{% endif %}
+      </div>
+      <div class="ch-stat-lbl">Avg Sleep</div>
+    </div>
+    <div class="ch-stat s-rose">
+      <div class="ch-stat-icon si-rose"><i class="fa-solid fa-arrow-trend-up"></i></div>
+      <div class="ch-stat-val">
+        {% set recent = checkins[:3] %}
+        {% set older  = checkins[3:6] %}
+        {% if recent and older %}
+          {% set r_avg = recent|sum(attribute='mood_score') / recent|length %}
+          {% set o_avg = older|sum(attribute='mood_score')  / older|length  %}
+          {% if r_avg > o_avg %}↑{% elif r_avg < o_avg %}↓{% else %}→{% endif %}
+        {% else %}—{% endif %}
+      </div>
+      <div class="ch-stat-lbl">Mood Trend</div>
+    </div>
+  </div>
+
+  <!-- ─── CHARTS ─── -->
+  <div class="ch-charts">
+
+    <!-- Line Chart -->
+    <div class="ch-card">
+      <div class="ch-card-head">
+        <div>
+          <div class="ch-card-title"><i class="fa-solid fa-chart-line"></i> Mood Over Time</div>
+          <div class="ch-card-sub">All check-ins chronologically</div>
+        </div>
+        <a href="{{ url_for('checkin') }}" class="btn btn-ghost" style="padding:5px 12px;font-size:0.72rem;">+ Add</a>
+      </div>
+      <div class="chart-240"><canvas id="lineChart"></canvas></div>
+      <div class="chart-legend">
+        <div class="cl-item"><div class="cl-dot" style="background:var(--dut-blue);"></div>Mood score</div>
+        <div class="cl-item"><div class="cl-dot" style="background:#ef4444;"></div>Stress level</div>
+      </div>
+    </div>
+
+    <!-- Bar / Doughnut -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      <div class="ch-card">
+        <div class="ch-card-title" style="margin-bottom:0.4rem;"><i class="fa-solid fa-chart-bar"></i> Mood Distribution</div>
+        <div class="ch-card-sub">Frequency by score range</div>
+        <div class="chart-200"><canvas id="barChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── RECORDS ─── -->
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-btn active" onclick="filterRecords('all', this)">All</button>
+    <button class="filter-btn" onclick="filterRecords('good', this)">😊 Good (7–10)</button>
+    <button class="filter-btn" onclick="filterRecords('mid', this)">😐 Neutral (4–6)</button>
+    <button class="filter-btn" onclick="filterRecords('low', this)">😔 Low (1–3)</button>
+    <div class="view-toggle" style="margin-left:auto;">
+      <button class="vt-btn active" id="vt-grid" onclick="setView('grid')" title="Card view">
+        <i class="fa-solid fa-grip"></i>
+      </button>
+      <button class="vt-btn" id="vt-table" onclick="setView('table')" title="Table view">
+        <i class="fa-solid fa-table-list"></i>
+      </button>
+    </div>
+    <div class="filter-search">
+      <i class="fa-solid fa-search"></i>
+      <input type="text" placeholder="Search notes..." id="search-input" oninput="searchRecords(this.value)">
+    </div>
+  </div>
+
+  <!-- Records Card -->
+  <div class="records-card">
+    <div class="records-head">
+      <div class="records-title">
+        <i class="fa-solid fa-clock-rotate-left"></i> All Check-ins
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="records-count" id="visible-count">{{ checkins|length }} records</span>
+        <a href="{{ url_for('checkin') }}" class="btn btn-primary" style="padding:5px 12px;font-size:0.72rem;">
+          <i class="fa-solid fa-plus"></i> New
+        </a>
+      </div>
+    </div>
+
+    <!-- GRID VIEW -->
+    <div id="grid-view">
+      <div class="records-grid" id="records-container">
+        {% for c in checkins %}
+        <div class="ci-record"
+             data-mood="{{ c.mood_score }}"
+             data-notes="{{ c.notes|lower if c.notes else '' }}">
+          <div class="ci-record-top">
+            <div class="ci-mood-ball mb-{{ c.mood_score }}">{{ c.mood_score }}</div>
+            <div class="ci-record-info">
+              <div class="ci-record-date">{{ c.timestamp.strftime('%A, %d %b %Y') }}</div>
+              <div class="ci-record-time">{{ c.timestamp.strftime('%I:%M %p') }}</div>
+              <div class="ci-record-mood-label" style="color:{% if c.mood_score>=8 %}#059669{% elif c.mood_score>=6 %}var(--dut-blue){% elif c.mood_score>=4 %}#d97706{% else %}#dc2626{% endif %};">
+                {% if c.mood_score >= 8 %}😄 Great
+                {% elif c.mood_score >= 6 %}🙂 Good
+                {% elif c.mood_score >= 4 %}😐 Neutral
+                {% else %}😞 Low{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="ci-metrics">
+            {% if c.stress_level %}
+            <span class="ci-metric {% if c.stress_level>=7 %}cm-stress-high{% elif c.stress_level>=5 %}cm-stress-mid{% else %}cm-stress-low{% endif %}">
+              <i class="fa-solid fa-brain" style="font-size:0.62rem;"></i>
+              Stress {{ c.stress_level }}/10
+            </span>
+            {% endif %}
+            {% if c.sleep_hours %}
+            <span class="ci-metric {% if c.sleep_hours >= 7 %}cm-sleep-good{% else %}cm-sleep-ok{% endif %}">
+              <i class="fa-solid fa-moon" style="font-size:0.62rem;"></i>
+              {{ c.sleep_hours }}h sleep
+            </span>
+            {% endif %}
+            {% if c.physical_activity and c.physical_activity != 'None' %}
+            <span class="ci-metric cm-activity">
+              <i class="fa-solid fa-person-running" style="font-size:0.62rem;"></i>
+              {{ c.physical_activity }}
+            </span>
+            {% endif %}
+          </div>
+
+          {% if c.ai_feedback %}
+          <div class="ci-ai">
+            <i class="fa-solid fa-robot"></i>
+            {{ c.ai_feedback.split('|')[0].strip()[:100] }}{% if c.ai_feedback|length > 100 %}...{% endif %}
+          </div>
+          {% endif %}
+
+          {% if c.notes %}
+          <div class="ci-notes">"{{ c.notes }}"</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- TABLE VIEW -->
+    <div id="table-view" style="display:none;overflow-x:auto;">
+      <table class="ci-table">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Mood</th>
+            <th>Score</th>
+            <th>Stress</th>
+            <th>Sleep</th>
+            <th>Activity</th>
+            <th>AI Feedback</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in checkins %}
+          <tr data-mood="{{ c.mood_score }}" data-notes="{{ c.notes|lower if c.notes else '' }}">
+            <td>
+              <div style="font-size:0.8rem;font-weight:600;color:var(--text);">{{ c.timestamp.strftime('%d %b %Y') }}</div>
+              <div style="font-size:0.68rem;color:var(--text-muted);">{{ c.timestamp.strftime('%I:%M %p') }}</div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:7px;">
+                <div class="mood-mini mb-{{ c.mood_score }}">{{ c.mood_score }}</div>
+                <span style="font-size:0.72rem;color:var(--text-muted);">
+                  {% if c.mood_score>=8 %}Great{% elif c.mood_score>=6 %}Good{% elif c.mood_score>=4 %}Neutral{% else %}Low{% endif %}
+                </span>
+              </div>
+            </td>
+            <td>
+              <div class="score-mini">
+                <div class="score-bar">
+                  <div class="score-fill" style="width:{{ c.mood_score*10 }}%;background:{% if c.mood_score>=8 %}#10b981{% elif c.mood_score>=6 %}var(--dut-blue){% elif c.mood_score>=4 %}#f97316{% else %}#ef4444{% endif %};"></div>
+                </div>
+                <span style="font-size:0.7rem;color:var(--text-muted);">{{ c.mood_score }}/10</span>
+              </div>
+            </td>
+            <td>
+              {% if c.stress_level %}
+              <span class="st-badge {% if c.stress_level>=7 %}st-low{% elif c.stress_level>=5 %}st-mid{% else %}st-high{% endif %}">
+                {{ c.stress_level }}/10
+              </span>
+              {% else %}<span style="color:var(--text-muted);">—</span>{% endif %}
+            </td>
+            <td style="font-size:0.78rem;color:var(--text-muted);">
+              {% if c.sleep_hours %}{{ c.sleep_hours }}h{% else %}—{% endif %}
+            </td>
+            <td style="font-size:0.76rem;color:var(--text-muted);">{{ c.physical_activity or '—' }}</td>
+            <td style="font-size:0.71rem;color:var(--text-muted);max-width:180px;">
+              {% if c.ai_feedback %}{{ c.ai_feedback.split('|')[0].strip()[:70] }}{% if c.ai_feedback|length > 70 %}...{% endif %}{% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination"></div>
+
+  </div>
+
+  {% else %}
+
+  <!-- Empty state -->
+  <div class="ch-card">
+    <div class="ch-empty">
+      <div class="ch-empty-icon"><i class="fa-solid fa-heart"></i></div>
+      <h3>No Check-ins Yet</h3>
+      <p>Start tracking your wellness today. It only takes 2 minutes and helps you understand your mental health patterns.</p>
+      <a href="{{ url_for('checkin') }}" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Log First Check-in
+      </a>
+    </div>
+  </div>
+
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  Chart.defaults.font.family = "'DM Sans', sans-serif";
+  Chart.defaults.color = '#94a3b8';
+
+  const dLabels = [{% for c in checkins|reverse %}'{{ c.timestamp.strftime("%d %b") }}',{% endfor %}];
+  const moods   = [{% for c in checkins|reverse %}{{ c.mood_score }},{% endfor %}];
+  const stress  = [{% for c in checkins|reverse %}{{ c.stress_level or 'null' }},{% endfor %}];
+
+  // ── Line Chart ──
+  if (moods.length && document.getElementById('lineChart')) {
+    new Chart(document.getElementById('lineChart'), {
+      type: 'line',
+      data: {
+        labels: dLabels,
+        datasets: [
+          {
+            label: 'Mood',
+            data: moods,
+            borderColor: '#003087',
+            backgroundColor: 'rgba(0,48,135,0.07)',
+            fill: true, tension: 0.42,
+            pointRadius: 4, pointBackgroundColor: '#003087',
+            pointBorderColor: '#fff', pointBorderWidth: 2,
+            borderWidth: 2.5,
+          },
+          {
+            label: 'Stress',
+            data: stress,
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239,68,68,0.04)',
+            fill: false, tension: 0.42,
+            pointRadius: 3, pointBackgroundColor: '#ef4444',
+            borderWidth: 1.8, borderDash: [4,4],
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            mode: 'index', intersect: false,
+            backgroundColor: '#0f172a', titleColor: '#e2e8f0', bodyColor: '#94a3b8',
+            padding: 10, cornerRadius: 8,
+          }
+        },
+        scales: {
+          y: { min: 0, max: 10, grid: { color: '#f1f5f9' }, ticks: { stepSize: 2, font: { size: 11 } } },
+          x: { grid: { display: false }, ticks: { font: { size: 11 }, maxTicksLimit: 10 } }
+        }
+      }
+    });
+  }
+
+  // ── Bar Chart (distribution) ──
+  if (moods.length && document.getElementById('barChart')) {
+    const dist = [0, 0, 0, 0]; // 1-3, 4-5, 6-7, 8-10
+    moods.forEach(m => {
+      if (m <= 3) dist[0]++;
+      else if (m <= 5) dist[1]++;
+      else if (m <= 7) dist[2]++;
+      else dist[3]++;
+    });
+    new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Low (1–3)', 'Neutral (4–5)', 'Good (6–7)', 'Great (8–10)'],
+        datasets: [{
+          data: dist,
+          backgroundColor: ['rgba(239,68,68,0.75)', 'rgba(245,158,11,0.75)', 'rgba(0,48,135,0.75)', 'rgba(16,185,129,0.75)'],
+          borderRadius: 7, borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+  }
+
+  // ── View toggle ──
+  function setView(v) {
+    document.getElementById('grid-view').style.display  = v === 'grid'  ? 'block' : 'none';
+    document.getElementById('table-view').style.display = v === 'table' ? 'block' : 'none';
+    document.getElementById('vt-grid').classList.toggle('active',  v === 'grid');
+    document.getElementById('vt-table').classList.toggle('active', v === 'table');
+  }
+
+  // ── Filter ──
+  function filterRecords(type, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const rows = document.querySelectorAll('.ci-record, .ci-table tbody tr');
+    let count = 0;
+    rows.forEach(row => {
+      const mood = parseInt(row.dataset.mood);
+      let show = true;
+      if (type === 'good') show = mood >= 7;
+      if (type === 'mid')  show = mood >= 4 && mood <= 6;
+      if (type === 'low')  show = mood <= 3;
+      row.style.display = show ? '' : 'none';
+      if (show) count++;
+    });
+    document.getElementById('visible-count').textContent = count + ' records';
+  }
+
+  // ── Search ──
+  function searchRecords(q) {
+    const rows = document.querySelectorAll('.ci-record, .ci-table tbody tr');
+    let count = 0;
+    rows.forEach(row => {
+      const notes = row.dataset.notes || '';
+      const show  = q === '' || notes.includes(q.toLowerCase());
+      row.style.display = show ? '' : 'none';
+      if (show) count++;
+    });
+    document.getElementById('visible-count').textContent = count + ' records';
+  }
+</script>
+{% endblock %}

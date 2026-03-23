@@ -1,0 +1,10 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:'Segoe UI',Arial,sans-serif;background:#f5f7fa;margin:0;padding:20px;}.wrap{max-width:560px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;}.header{background:#e67e22;padding:1.5rem;text-align:center;color:white;}.header h1{margin:0;font-size:1.3rem;}.body{padding:1.5rem;}.body p{color:#444;line-height:1.6;font-size:0.9rem;}.info{background:#fff8e1;border-left:4px solid #e67e22;padding:1rem;border-radius:0 8px 8px 0;margin:1rem 0;font-size:0.88rem;}.footer{background:#f5f7fa;padding:1rem;text-align:center;font-size:0.72rem;color:#888;}</style></head>
+<body><div class="wrap">
+<div class="header"><h1>⚠️ Low Mood Alert – {{ user.full_name }}</h1></div>
+<div class="body">
+<p>A student has reported a low mood score and may need support.</p>
+<div class="info"><strong>Student:</strong> {{ user.full_name }} ({{ user.student_number }})<br><strong>Mood Score:</strong> {{ mood }}/10<br><strong>Phone:</strong> {{ user.phone or 'Not provided' }}</div>
+<p>Please consider reaching out to this student or reviewing their recent check-ins.</p>
+</div>
+<div class="footer">DUT Wellness Centre · Automated alert system</div>
+</div></body></html>

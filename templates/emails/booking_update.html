@@ -1,0 +1,17 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:'Segoe UI',Arial,sans-serif;background:#f5f7fa;margin:0;padding:20px;}.wrap{max-width:560px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;}.header{padding:1.5rem;text-align:center;color:white;}.confirmed{background:#27ae60;}.cancelled{background:#e74c3c;}.header h1{margin:0;font-size:1.3rem;}.body{padding:1.5rem;}.body p{color:#444;line-height:1.6;font-size:0.9rem;}.info{border-radius:10px;padding:1rem;margin:1rem 0;font-size:0.88rem;}.info-confirmed{background:#f0fdf4;color:#16a34a;}.info-cancelled{background:#fef2f2;color:#991b1b;}.footer{background:#f5f7fa;padding:1rem;text-align:center;font-size:0.72rem;color:#888;}</style></head>
+<body><div class="wrap">
+<div class="header {{ booking.status }}"><h1>📅 Session {% if booking.status == 'confirmed' %}Confirmed ✓{% elif booking.status == 'cancelled' %}Cancelled{% else %}Updated{% endif %}</h1></div>
+<div class="body">
+<p>Hi {{ student.full_name.split()[0] }},</p>
+<p>Your counselling session has been <strong>{{ booking.status }}</strong>.</p>
+<div class="info info-{{ booking.status }}">
+<strong>Type:</strong> {{ booking.session_type|title }}<br>
+<strong>Date:</strong> {{ booking.preferred_date.strftime('%d %B %Y at %H:%M') if booking.preferred_date else 'TBD' }}<br>
+<strong>Status:</strong> {{ booking.status|title }}<br>
+{% if booking.notes %}<strong>Notes:</strong> {{ booking.notes }}{% endif %}
+</div>
+{% if booking.status == 'confirmed' %}<p>Please arrive 5 minutes early. If you need to reschedule, contact us at wellness@dut.ac.za.</p>
+{% else %}<p>To book another session, please visit the wellness portal. If this is urgent, call 0800-567-567.</p>{% endif %}
+</div>
+<div class="footer">© DUT Wellness Centre</div>
+</div></body></html>

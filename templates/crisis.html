@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crisis Support – DUT Wellness</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root{--dut-blue:#003087;--dut-gold:#FFB81C;--danger:#e74c3c;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:#fff9f9;min-height:100vh;}
+    .header{background:linear-gradient(135deg,#8b0000,#c0392b);color:white;padding:3rem 2rem;text-align:center;}
+    .header h1{font-family:'Playfair Display',serif;font-size:2.5rem;margin-bottom:0.5rem;}
+    .header p{font-size:1rem;opacity:0.9;max-width:500px;margin:0 auto 1.5rem;}
+    .header .crisis-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:white;color:#c0392b;border-radius:100px;font-weight:700;text-decoration:none;font-size:1rem;box-shadow:0 4px 20px rgba(0,0,0,0.2);}
+    .container{max-width:900px;margin:0 auto;padding:2.5rem 1.5rem;}
+    h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:#1a1a2e;margin-bottom:1.5rem;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem;margin-bottom:3rem;}
+    .hotline-card{background:white;border-radius:14px;padding:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:4px solid #c0392b;transition:transform 0.2s,box-shadow 0.2s;}
+    .hotline-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,0.1);}
+    .hotline-card h3{font-weight:700;font-size:1rem;margin-bottom:4px;color:#1a1a2e;}
+    .hotline-card p{font-size:0.82rem;color:#666;margin-bottom:10px;}
+    .hotline-number{font-size:1.4rem;font-weight:700;color:#c0392b;font-family:'Playfair Display',serif;}
+    .call-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 16px;background:#c0392b;color:white;border-radius:8px;text-decoration:none;font-size:0.82rem;font-weight:600;}
+    .info-section{background:white;border-radius:14px;padding:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:1.5rem;}
+    .info-section h3{font-weight:700;margin-bottom:0.75rem;color:#1a1a2e;}
+    .info-section li{font-size:0.875rem;color:#555;margin-bottom:6px;line-height:1.5;}
+    .nav-bar{background:var(--dut-blue);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;}
+    .nav-bar .brand{font-family:'Playfair Display',serif;color:white;font-size:1.1rem;text-decoration:none;}
+    .nav-bar a{color:rgba(255,255,255,0.8);text-decoration:none;font-size:0.85rem;margin-left:1.5rem;}
+    .nav-bar a:hover{color:var(--dut-gold);}
+    @media(max-width:600px){.grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <span class="brand">DUT Wellness Centre</span>
+    <div>
+      <a href="{{ url_for('login') }}">Login</a>
+      <a href="{{ url_for('register') }}">Register</a>
+    </div>
+  </div>
+
+  <div class="header">
+    <div style="font-size:3rem;margin-bottom:1rem;">🆘</div>
+    <h1>Crisis Support</h1>
+    <p>You are not alone. Help is available 24 hours a day, 7 days a week.</p>
+    <a href="tel:0800567567" class="crisis-btn"><i class="fa-solid fa-phone-volume"></i> Call Now: 0800-567-567</a>
+  </div>
+
+  <div class="container">
+    <h2>Emergency Hotlines</h2>
+    <div class="grid">
+      <div class="hotline-card">
+        <h3>🏫 DUT Wellness Centre</h3>
+        <p>On-campus mental health support for students</p>
+        <div class="hotline-number">0800-567-567</div>
+        <a href="tel:0800567567" class="call-btn"><i class="fa-solid fa-phone"></i> Call Now</a>
+      </div>
+      <div class="hotline-card">
+        <h3>💚 SADAG Helpline</h3>
+        <p>SA Depression and Anxiety Group – 24/7 support</p>
+        <div class="hotline-number">0800-456-789</div>
+        <a href="tel:0800456789" class="call-btn"><i class="fa-solid fa-phone"></i> Call Now</a>
+      </div>
+      <div class="hotline-card">
+        <h3>🌱 Lifeline SA</h3>
+        <p>Emotional support and suicide prevention</p>
+        <div class="hotline-number">0861-322-322</div>
+        <a href="tel:0861322322" class="call-btn"><i class="fa-solid fa-phone"></i> Call Now</a>
+      </div>
+      <div class="hotline-card">
+        <h3>🚨 Police Emergency</h3>
+        <p>South African Police Service emergency line</p>
+        <div class="hotline-number">10111</div>
+        <a href="tel:10111" class="call-btn"><i class="fa-solid fa-phone"></i> Call Now</a>
+      </div>
+      <div class="hotline-card">
+        <h3>🚑 Medical Emergency</h3>
+        <p>Ambulance and emergency medical services</p>
+        <div class="hotline-number">10177</div>
+        <a href="tel:10177" class="call-btn"><i class="fa-solid fa-phone"></i> Call Now</a>
+      </div>
+      <div class="hotline-card">
+        <h3>👩‍⚕️ GBV Command Centre</h3>
+        <p>Gender-based violence support (24/7)</p>
+        <div class="hotline-number">0800-428-428</div>
+        <a href="tel:0800428428" class="call-btn"><i class="fa-solid fa-phone"></i> Call Now</a>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr;">
+      <div class="info-section">
+        <h3>⚠️ Warning Signs to Watch For</h3>
+        <ul style="list-style:none;padding:0;">
+          <li>💔 Talking about wanting to die or self-harm</li>
+          <li>😔 Extreme hopelessness or sadness</li>
+          <li>😴 Severe sleep changes or isolation</li>
+          <li>😠 Sudden anger or reckless behaviour</li>
+          <li>📵 Withdrawing from friends and activities</li>
+          <li>🍷 Increased substance use</li>
+        </ul>
+      </div>
+      <div class="info-section">
+        <h3>🤝 How to Help a Friend</h3>
+        <ul style="list-style:none;padding:0;">
+          <li>👂 Listen without judgment</li>
+          <li>💬 Ask directly: "Are you thinking of hurting yourself?"</li>
+          <li>📞 Help them call a crisis line</li>
+          <li>🚫 Don't leave them alone in severe distress</li>
+          <li>📝 Remove access to harmful means if possible</li>
+          <li>🏥 Escort them to campus health if needed</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:2rem;background:var(--dut-blue);border-radius:14px;color:white;">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:0.5rem;">DUT Student? Log in for full support access.</h3>
+      <p style="opacity:0.8;font-size:0.9rem;margin-bottom:1.5rem;">Book counselling sessions, access peer support, and track your wellbeing.</p>
+      <a href="{{ url_for('login') }}" style="background:var(--dut-gold);color:var(--dut-blue);padding:12px 28px;border-radius:100px;text-decoration:none;font-weight:700;font-size:0.95rem;">Login to Wellness Portal →</a>
+    </div>
+  </div>
+</body>
+</html>
