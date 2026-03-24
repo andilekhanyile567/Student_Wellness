@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cycle Tracker - Student Wellness App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f8fb;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        .form-section, .history-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .entry {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Cycle Tracker</h1>
+    <p>Track your wellness cycles and patterns</p>
+</header>
+
+<div class="container">
+
+    <!-- Cycle Form -->
+    <div class="form-section">
+        <h2>Log Your Cycle</h2>
+        <form id="cycleForm">
+            <label>Start Date:</label>
+            <input type="date" id="startDate" required>
+
+            <label>End Date:</label>
+            <input type="date" id="endDate">
+
+            <label>Mood:</label>
+            <select id="mood">
+                <option>Happy</option>
+                <option>Sad</option>
+                <option>Stressed</option>
+                <option>Tired</option>
+            </select>
+
+            <label>Symptoms:</label>
+            <input type="text" id="symptoms" placeholder="e.g. cramps, headache">
+
+            <label>Notes:</label>
+            <textarea id="notes" rows="3"></textarea>
+
+            <button type="submit">Save Entry</button>
+        </form>
+    </div>
+
+    <!-- Cycle History -->
+    <div class="history-section">
+        <h2>Cycle History</h2>
+        <div id="history"></div>
+    </div>
+
+</div>
+
+<script>
+    const form = document.getElementById("cycleForm");
+    const historyDiv = document.getElementById("history");
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const mood = document.getElementById("mood").value;
+        const symptoms = document.getElementById("symptoms").value;
+        const notes = document.getElementById("notes").value;
+
+        const entry = document.createElement("div");
+        entry.classList.add("entry");
+
+        entry.innerHTML = `
+            <strong>Start:</strong> ${startDate} <br>
+            <strong>End:</strong> ${endDate || "N/A"} <br>
+            <strong>Mood:</strong> ${mood} <br>
+            <strong>Symptoms:</strong> ${symptoms} <br>
+            <strong>Notes:</strong> ${notes}
+        `;
+
+        historyDiv.prepend(entry);
+
+        form.reset();
+    });
+</script>
+
+</body>
+</html>
